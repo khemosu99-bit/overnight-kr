@@ -1,0 +1,56 @@
+name: Build & Deploy
+
+on:
+  schedule:
+    - cron: "0 0 * * 1-5"      # 09:00 KST (KRX 08시 갱신 후)
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - run: pip install -r requirements.txt
+
+      - name: KRX 신규 데이터 수집
+        env:
+          KRX_AUTH_KEY: ${{ secrets.KRX_AUTH_KEY }}
+        run: python scripts/krx_history.py
+
+      - name: 사이트 빌드
+        run: python scripts/build_site.py
+
+      - name: 데이터 커밋
+        run: |
+          git config user.name  "site-bot"
+          git config user.email "bot@users.noreply.github.com"
+          git add data/ site/
+          git diff --staged --quiet || git commit -m "update: $(date -u +%F)"
+          git push || true
+
+      - uses: actions/configure-pages@v5
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: site
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.dep.outputs.page_url }}
+    steps:
+      - id: dep
+        uses: actions/deploy-pages@v4
