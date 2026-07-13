@@ -1,7 +1,9 @@
 """
-검증기 v2 + 신뢰 가능한 분석
-- 검사 스펙을 올바르게 재설계
-- Open을 쓰지 않는 '종가 기준' 분석으로 결론을 낸다
+검증기 v3
+1) 최근 데이터 이상 점검 (실시간 운영 가능성)
+2) SOX가 S&P 대비 추가 정보를 주는가 (중복 제거)
+3) 시대별 안정성 (지금도 유효한가)
+4) 검증 vs 시험 분할 (과최적화 확인)
 """
 import pathlib
 import numpy as np
@@ -9,98 +11,126 @@ import pandas as pd
 
 ROOT = pathlib.Path(__file__).resolve().parent.parent
 RAW = ROOT / "data" / "raw"
-START = "2010-01-01"          # 옛 구간 결함 회피
 
 
-def load(name):
+def load(name, start="2010-01-01"):
     df = pd.read_csv(RAW / f"{name}.csv", parse_dates=["Date"])
     df["Date"] = df["Date"].dt.tz_localize(None).dt.normalize()
     df = df.sort_values("Date").dropna(subset=["Close"])
-    return df[df["Date"] >= START].reset_index(drop=True)
+    return df[df["Date"] >= start].reset_index(drop=True)
 
 
-# ══════════ PART A. 데이터 품질 검사 (올바른 스펙) ══════════
-def quality(name):
-    df = load(name)
-    if len(df) < 100:
-        print(f"\n  {name}: 데이터 부족")
-        return
-
-    ret = df["Close"].pct_change().dropna() * 100
-    print(f"\n  ── {name}  ({len(df):,}일, {START} 이후) ──")
-    print(f"    일간 변동성(표준편차)   {ret.std():>6.2f}%")
-    print(f"    |일간등락| > 5% 인 날    {(ret.abs() > 5).mean()*100:>6.2f}%   (정상: 1% 미만)")
-    print(f"    |일간등락| > 3% 인 날    {(ret.abs() > 3).mean()*100:>6.2f}%   (정상: 3% 미만)")
-
-    if {"Open", "High", "Low"} <= set(df.columns):
-        dup_h = (df["High"] == df["High"].shift(1)).mean() * 100
-        eq_oc = (df["Open"] == df["Close"]).mean() * 100
-        gap_up = (df["Open"] / df["Close"].shift(1) > 1).mean() * 100
-        print(f"    전일과 고가 중복        {dup_h:>6.2f}%   (정상: 1% 미만)")
-        print(f"    시가 == 종가            {eq_oc:>6.2f}%   (정상: 1% 미만)")
-        print(f"    갭상승 비율             {gap_up:>6.1f}%   (정상: 45~55%)")
-
-        bad = (ret.abs() > 5).mean() > 0.01 or dup_h > 1 or abs(gap_up - 50) > 8
-        print(f"    ▶ 판정: {'❌ 사용 불가' if bad else '✅ 사용 가능'}")
-
-
-# ══════════ PART B. Open 없는 분석 (신뢰 가능) ══════════
 def build():
-    kr = {}
+    base = None
     for m in ["KOSPI", "KOSDAQ"]:
-        d = load(m)[["Date", "Close"]].rename(columns={"Close": m})
-        kr[m] = d
+        d = load(m)[["Date", "Close"]].copy()
+        d[f"{m}_ret"] = d["Close"].pct_change() * 100
+        d = d[["Date", f"{m}_ret"]]
+        base = d if base is None else base.merge(d, on="Date", how="outer")
+    base = base.sort_values("Date")
 
-    base = kr["KOSPI"].merge(kr["KOSDAQ"], on="Date", how="outer").sort_values("Date")
-    for m in ["KOSPI", "KOSDAQ"]:
-        base[f"{m}_ret"] = base[m].pct_change() * 100
-
-    for us in ["SOX", "EWY", "NASDAQ", "SP500"]:
+    for us in ["SOX", "SP500", "NASDAQ", "EWY"]:
         u = load(us)[["Date", "Close"]].copy()
         u[f"{us}_pct"] = u["Close"].pct_change() * 100
         u = u[["Date", f"{us}_pct"]].dropna().sort_values("Date")
         base = pd.merge_asof(base, u, on="Date", direction="backward",
                              allow_exact_matches=False)
-    return base.dropna(subset=["KOSPI_ret", "SOX_pct", "EWY_pct"])
+    return base.dropna(subset=["KOSPI_ret", "SOX_pct", "SP500_pct"])
 
 
-def stat(df, target, label, mask):
-    sub = df[mask][target].dropna()
-    n = len(sub)
-    if n < 30:
-        print(f"    {label:<32} 표본부족({n})")
-        return
-    hit = (sub > 0).mean() * 100
-    se = sub.std() / np.sqrt(n)
-    t = sub.mean() / se if se else 0
-    sig = "⭐" if abs(t) >= 2 else "  "
-    print(f"    {label:<32} {n:>5}회 | 평균 {sub.mean():>+6.2f}% | "
-          f"상승 {hit:>5.1f}% | t={t:>+5.1f} {sig}")
+def tstat(s):
+    s = s.dropna()
+    if len(s) < 20:
+        return np.nan, len(s)
+    return s.mean() / (s.std() / np.sqrt(len(s))), len(s)
 
 
-def main():
-    print("=" * 78)
-    print("  PART A. 데이터 품질 검사")
-    print("=" * 78)
-    for m in ["EWY", "SOX", "SP500", "NASDAQ", "KOSPI", "KOSDAQ"]:
-        quality(m)
+# ══════ 검사 1. 최근 데이터 이상 (가장 중요) ══════
+def recent_check():
+    print("=" * 76)
+    print("  【검사 1】 최근 데이터 신뢰성  ← 실시간 운영 가능 여부")
+    print("=" * 76)
+    for m in ["KOSPI", "KOSDAQ"]:
+        df = load(m, "2024-01-01")
+        df["ret"] = df["Close"].pct_change() * 100
+        print(f"\n  ── {m} 최근 2년 ──")
+        big = df[df["ret"].abs() > 4][["Date", "Close", "ret"]]
+        print(f"    |일간등락| > 4% 인 날: {len(big)}일 / {len(df)}일")
+        if len(big):
+            print("    (많으면 데이터 오류 의심)")
+            for _, r in big.tail(10).iterrows():
+                print(f"      {r['Date']:%Y-%m-%d}  종가 {r['Close']:>9,.2f}  {r['ret']:>+7.2f}%")
 
-    df = build()
-    print("\n\n" + "=" * 78)
-    print(f"  PART B. 종가→종가 분석  (Open 미사용 = 오염 무관)")
-    print(f"  표본 {len(df):,}일  |  t값 절대치 2 이상이면 통계적으로 유의(⭐)")
-    print("=" * 78)
+        d = load(m, "2026-06-01")
+        print(f"\n    ── 최근 원자료 (직접 확인용) ──")
+        print(d.tail(12)[["Date", "Open", "High", "Low", "Close"]]
+              .to_string(index=False, float_format=lambda x: f"{x:,.2f}"))
 
-    for target, name in [("KOSPI_ret", "KOSPI"), ("KOSDAQ_ret", "KOSDAQ")]:
-        print(f"\n  【{name} 다음날 종가 등락률】")
-        stat(df, target, "◽ 기준선 (전체 평균)", pd.Series(True, index=df.index))
-        stat(df, target, "간밤 SOX +2% 이상", df["SOX_pct"] >= 2)
-        stat(df, target, "간밤 SOX -2% 이하", df["SOX_pct"] <= -2)
-        stat(df, target, "간밤 EWY +1.5% 이상", df["EWY_pct"] >= 1.5)
-        stat(df, target, "간밤 EWY -1.5% 이하", df["EWY_pct"] <= -1.5)
-        stat(df, target, "SOX+2% & EWY+1.5% 동시", (df["SOX_pct"] >= 2) & (df["EWY_pct"] >= 1.5))
-        stat(df, target, "SOX-2% & EWY-1.5% 동시", (df["SOX_pct"] <= -2) & (df["EWY_pct"] <= -1.5))
+
+# ══════ 검사 2. SOX는 S&P 대비 추가 정보를 주는가 ══════
+def incremental(df):
+    print("\n\n" + "=" * 76)
+    print("  【검사 2】 SOX가 S&P500 대비 '추가' 정보를 주는가")
+    print("  → S&P를 고정하고 SOX만 다를 때 결과가 갈리는지 본다")
+    print("=" * 76)
+    mild = df["SP500_pct"].abs() < 0.5        # S&P는 조용했던 날만
+    for lo, hi, lab in [(1.5, 99, "SOX 큰 상승 (+1.5%↑)"),
+                        (-99, -1.5, "SOX 큰 하락 (-1.5%↓)")]:
+        m = mild & df["SOX_pct"].between(lo, hi)
+        t, n = tstat(df[m]["KOSPI_ret"])
+        up = (df[m]["KOSPI_ret"] > 0).mean() * 100 if n else np.nan
+        mark = "⭐" if abs(t) >= 2 else "  "
+        print(f"\n  S&P 보합(±0.5%) & {lab}")
+        print(f"    {n:>4}회 | 평균 {df[m]['KOSPI_ret'].mean():>+6.2f}% | "
+              f"상승 {up:>5.1f}% | t={t:>+5.1f} {mark}")
+    print("\n  ⭐가 있으면 → SOX 고유의 정보력 있음 (반도체=코스피 핵심)")
+    print("  ⭐가 없으면 → SOX는 그냥 미국장 대리변수. S&P만 써도 됨")
+
+
+# ══════ 검사 3. 시대별 안정성 ══════
+def regime(df):
+    print("\n\n" + "=" * 76)
+    print("  【검사 3】 시대별 안정성  ← 지금도 유효한가?")
+    print("=" * 76)
+    eras = [("2010-2015", "2010-01-01", "2015-12-31"),
+            ("2016-2020", "2016-01-01", "2020-12-31"),
+            ("2021-2026", "2021-01-01", "2026-12-31")]
+    print(f"\n  {'시기':<12} {'SOX+2%→KOSPI':>22} {'SOX-2%→KOSPI':>22}")
+    print("  " + "-" * 60)
+    for lab, s, e in eras:
+        d = df[(df["Date"] >= s) & (df["Date"] <= e)]
+        out = [lab]
+        for cond in [d["SOX_pct"] >= 2, d["SOX_pct"] <= -2]:
+            sub = d[cond]["KOSPI_ret"]
+            t, n = tstat(sub)
+            out.append(f"{sub.mean():+.2f}% ({n}회,t={t:+.1f})" if n >= 20 else "표본부족")
+        print(f"  {out[0]:<12} {out[1]:>22} {out[2]:>22}")
+    print("\n  → 세 시기 모두 같은 방향이면 안정. 최근이 약해지면 효과 소멸 중")
+
+
+# ══════ 검사 4. 검증/시험 분할 ══════
+def holdout(df):
+    print("\n\n" + "=" * 76)
+    print("  【검사 4】 과최적화 확인  (앞 70%로 정하고, 뒤 30%로 시험)")
+    print("=" * 76)
+    cut = df["Date"].quantile(0.7)
+    for lab, d in [("학습구간(앞70%)", df[df["Date"] <= cut]),
+                   ("시험구간(뒤30%)", df[df["Date"] > cut])]:
+        print(f"\n  ── {lab}  ({d['Date'].min():%Y-%m} ~ {d['Date'].max():%Y-%m}) ──")
+        for cond, name in [(d["SOX_pct"] >= 2, "SOX +2%↑"),
+                           (d["SOX_pct"] <= -2, "SOX -2%↓")]:
+            sub = d[cond]["KOSPI_ret"]
+            t, n = tstat(sub)
+            up = (sub > 0).mean() * 100 if n else np.nan
+            mark = "⭐" if abs(t) >= 2 else "  "
+            print(f"    {name:<10} {n:>4}회 | 평균 {sub.mean():>+6.2f}% | "
+                  f"상승 {up:>5.1f}% | t={t:>+5.1f} {mark}")
+    print("\n  → 시험구간에서도 ⭐면 진짜. 무너지면 과거에만 통한 것")
 
 
 if __name__ == "__main__":
-    main()
+    recent_check()
+    df = build()
+    incremental(df)
+    regime(df)
+    holdout(df)
