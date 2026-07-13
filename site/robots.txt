@@ -1,0 +1,7 @@
+User-agent: *
+Allow: /
+
+User-agent: Yeti
+Allow: /
+
+Sitemap: https://khemosu99-bit.github.io/overnight-kr/sitemap.xml

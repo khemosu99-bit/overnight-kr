@@ -1,0 +1,116 @@
+<!DOCTYPE html><html lang="ko"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>방법론과 한계 | 야간선물 환산기</title>
+<meta name="description" content="회귀 모델, 국면별 예측구간 산출 방법, 검증하고 기각한 가설, 그리고 이 모델의 한계를 공개합니다.">
+<link rel="canonical" href="https://khemosu99-bit.github.io/overnight-kr/methodology.html">
+<meta property="og:title" content="방법론과 한계 | 야간선물 환산기">
+<meta property="og:description" content="회귀 모델, 국면별 예측구간 산출 방법, 검증하고 기각한 가설, 그리고 이 모델의 한계를 공개합니다.">
+<meta property="og:type" content="website">
+<meta name="robots" content="index,follow,max-snippet:-1,max-image-preview:large">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:-apple-system,'Segoe UI','Malgun Gothic',sans-serif;
+line-height:1.7;color:#1a1a1a;background:#f6f7f9;padding:16px}
+.w{max-width:720px;margin:0 auto}
+header{padding:20px 0 8px}
+h1{font-size:1.5rem;letter-spacing:-.02em}
+.sub{color:#666;font-size:.9rem;margin-top:4px}
+.card{background:#fff;border:1px solid #e4e6ea;border-radius:12px;
+padding:20px;margin:16px 0}
+h2{font-size:1.1rem;margin-bottom:12px;padding-bottom:8px;
+border-bottom:2px solid #1a1a1a;display:inline-block}
+label{display:block;font-size:.85rem;color:#555;margin:12px 0 4px}
+input{width:100%;padding:12px;font-size:1.1rem;border:1px solid #ccd;
+border-radius:8px;font-family:inherit}
+button{width:100%;padding:14px;margin-top:14px;background:#1a1a1a;color:#fff;
+border:0;border-radius:8px;font-size:1rem;font-weight:600;cursor:pointer}
+.out{margin-top:18px;padding:16px;background:#f0f4f8;border-radius:8px;display:none}
+.out.on{display:block}
+.big{font-size:2rem;font-weight:700;letter-spacing:-.02em}
+.rng{font-size:1.05rem;color:#333;margin-top:6px}
+.note{font-size:.82rem;color:#666;margin-top:10px}
+table{width:100%;border-collapse:collapse;font-size:.85rem;margin-top:8px}
+th,td{padding:8px 6px;text-align:right;border-bottom:1px solid #eee}
+th{background:#fafbfc;font-weight:600;color:#555}
+td:first-child,th:first-child{text-align:left}
+.up{color:#c0392b}.dn{color:#1565c0}
+.ok{color:#1b7a3d;font-weight:600}.no{color:#b23}
+.warn{background:#fff8e6;border:1px solid #f0d9a0;border-radius:12px;padding:18px;margin:16px 0}
+.warn h2{border-color:#c99700}
+.warn li{margin:6px 0 6px 18px;font-size:.92rem}
+.kv{display:flex;justify-content:space-between;padding:7px 0;
+border-bottom:1px dashed #eee;font-size:.9rem}
+.kv b{font-weight:600}
+details{margin:8px 0;border-bottom:1px solid #eee;padding-bottom:8px}
+summary{cursor:pointer;font-weight:600;padding:8px 0;font-size:.95rem}
+details p{font-size:.9rem;color:#444;padding:4px 0 8px}
+footer{text-align:center;color:#888;font-size:.8rem;padding:28px 0}
+nav a{color:#1a1a1a;margin-right:14px;font-size:.88rem}
+.badge{display:inline-block;padding:3px 10px;border-radius:99px;
+background:#1a1a1a;color:#fff;font-size:.75rem;margin-left:6px}
+</style></head><body><div class="w">
+<header><h1>야간선물 → 개장 갭 환산기</h1>
+<div class="sub">코스피200 야간선물로 다음 개장 갭을 환산합니다 · KRX 공식 데이터</div>
+<nav style="margin-top:10px"><a href="./">환산기</a><a href="./guide.html">야간선물 제도</a><a href="./methodology.html">방법론·한계</a></nav>
+</header>
+<div class="card">
+<h2>데이터</h2>
+<div class="kv"><span>출처</span><b>KRX 공식 Open API</b></div>
+<div class="kv"><span>기간</span><b>2025-07-07 ~ 2026-07-10</b></div>
+<div class="kv"><span>표본</span><b>246거래일</b></div>
+<div class="kv"><span>갱신</span><b>매 영업일 자동</b></div>
+</div>
+
+<div class="card">
+<h2>모델</h2>
+<p>야간선물 등락률(X)로 개장 갭(Y)을 회귀합니다.</p>
+<p style="margin:10px 0;padding:12px;background:#f0f4f8;border-radius:8px;font-family:monospace">
+갭(%) = 0.968 × 야간등락(%) + 0.080<br>
+R² = 0.77
+</p>
+<p>최근 20거래일 실현변동성으로 국면(저/중/고변동)을 판정하고, <b>국면별 잔차 표준편차로 예측구간을 산출</b>합니다. 계수는 국면과 무관하게 안정적이지만, 오차범위는 국면에 따라 4배 이상 차이 납니다.</p>
+</div>
+
+<div class="card">
+<h2>검증하고 기각한 가설들</h2>
+<p style="font-size:.9rem;color:#555">저희가 시도했다가 <b>데이터로 기각한</b> 가설을 공개합니다.</p>
+<div class="kv"><span>갭은 장중에 되돌려진다</span><b class="no">기각 (t=0.5)</b></div>
+<div class="kv"><span>야간 프리미엄은 소멸한다</span><b class="no">기각 (시험구간 붕괴)</b></div>
+<div class="kv"><span>20일 부분군별 국면 차이</span><b class="no">기각 (F=0.83)</b></div>
+<div class="kv"><span>야간 → 개장 갭 환산</span><b class="ok">채택 (13개 부분군 전수 확인)</b></div>
+<p style="margin-top:12px">기각된 가설을 숨기지 않는 이유는, 그것이 이 사이트가 제공하는 <b>유일한 정보의 신뢰성</b>을 뒷받침하기 때문입니다.</p>
+</div>
+
+<div class="card">
+<h2>한계</h2>
+<ul style="margin-left:18px;font-size:.92rem">
+<li>표본이 246거래일로 크지 않습니다. KRX 자체 야간시장이 2025년 6월 시작되었기 때문입니다.</li>
+<li>회귀는 인과를 증명하지 않습니다. 야간선물과 개장가는 같은 정보를 반영하는 관계입니다.</li>
+<li>제도 변경, 시장구조 변화 시 계수는 달라질 수 있습니다.</li>
+<li>급변 상황(서킷브레이커 등)에서는 모델이 적용되지 않습니다.</li>
+</ul>
+</div>
+
+<footer>데이터: 한국거래소(KRX) 공식 Open API<br>
+투자 판단의 근거로 사용될 수 없으며, 어떠한 매매 조언도 제공하지 않습니다.<br>
+최종 갱신 2026-07-14 06:42 KST</footer></div><script>
+const M = {"beta": 0.9823, "alpha": -0.0342, "se": 1.499, "r2": 0.8, "n": 81, "regime": "\uace0\ubcc0\ub3d9", "all_n": 246, "all_beta": 0.9678, "regimes": {"\uc800\ubcc0\ub3d9": {"beta": 0.8973, "alpha": 0.0723, "r2": 0.808, "se": 0.315, "n": 81}, "\uc911\ubcc0\ub3d9": {"beta": 0.9403, "alpha": 0.2035, "r2": 0.667, "se": 0.988, "n": 84}, "\uace0\ubcc0\ub3d9": {"beta": 0.9823, "alpha": -0.0342, "r2": 0.8, "se": 1.499, "n": 81}}, "last_date": "2026-07-10", "last_night": 1233.35, "last_prev": 1179.55, "start": "2025-07-07"};
+function calc(){
+  const n = parseFloat(document.getElementById('nc').value);
+  const p = parseFloat(document.getElementById('pc').value);
+  const o = document.getElementById('out');
+  if(!n||!p){alert('두 값을 모두 입력해 주세요');return;}
+  const nr = (n/p-1)*100;
+  const g  = M.beta*nr + M.alpha;
+  const w  = 1.28*M.se;
+  document.getElementById('nr').textContent = (nr>=0?'+':'')+nr.toFixed(2)+'%';
+  document.getElementById('gp').textContent = (g>=0?'+':'')+g.toFixed(2)+'%';
+  document.getElementById('gp').className = 'big ' + (g>=0?'up':'dn');
+  document.getElementById('rg').textContent =
+    (g-w>=0?'+':'')+(g-w).toFixed(2)+'% ~ '+(g+w>=0?'+':'')+(g+w).toFixed(2)+'%';
+  document.getElementById('k2').textContent =
+    (p*(1+g/100)).toFixed(2) + ' (약 ' + (p*(1+(g-w)/100)).toFixed(1) +
+    ' ~ ' + (p*(1+(g+w)/100)).toFixed(1) + ')';
+  o.classList.add('on');
+}
+</script></body></html>
