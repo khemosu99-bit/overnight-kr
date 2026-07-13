@@ -81,7 +81,16 @@ print(f"✅ 지수 {len(have)}일 확보 → data/kr_index.csv\n")
 
 # ═══════ 병합 & 지표 계산 ═══════
 idx = pd.read_csv(CACHE, parse_dates=["date"])
+
+# ⚠️ night_futures.csv에 이미 kospi_close 등이 있어 이름이 충돌한다.
+#    kr_index.csv 쪽이 정본이므로, df에서 중복 컬럼을 먼저 버린다.
+dup = [c for c in idx.columns if c != "date" and c in df.columns]
+if dup:
+    print(f"⚠️ 중복 컬럼 제거 (kr_index 쪽을 정본으로 사용): {dup}")
+    df = df.drop(columns=dup)
+
 d = df.merge(idx, on="date", how="inner").sort_values("date").reset_index(drop=True)
+print(f"✅ 병합 완료: {len(d)}일\n")
 
 d["fut_prev"] = d["reg_close"].shift(1)
 d["night_ret"] = (d["night_close"] / d["fut_prev"] - 1) * 100
