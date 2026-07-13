@@ -19,7 +19,7 @@ jobs:
       - name: KRX 탐침
         env:
           KRX_AUTH_KEY: ${{ secrets.KRX_AUTH_KEY }}
-        run: python scripts/index_link.py
+        run: python scripts/realtime_model.py
 
       - name: 저장
         if: always()
