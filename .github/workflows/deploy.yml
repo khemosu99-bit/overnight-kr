@@ -2,8 +2,10 @@ name: Build & Deploy
 
 on:
   schedule:
-    - cron: "0 22 * * 0-4"
-    - cron: "0 0 * * 1-5"
+    - cron: "0 22 * * 0-4"    # 07:00 KST
+    - cron: "0 0 * * 1-5"     # 09:00 KST
+    - cron: "30 9 * * 1-5"    # 18:30 KST  ← 추가 (마감 후)
+
   push:
     branches: [main]
     paths:
@@ -40,6 +42,12 @@ jobs:
         env:
           KRX_AUTH_KEY: ${{ secrets.KRX_AUTH_KEY }}
         run: python scripts/krx_history.py
+        continue-on-error: true
+
+      - name: KRX 지수 수집
+        env:
+          KRX_AUTH_KEY: ${{ secrets.KRX_AUTH_KEY }}
+        run: python scripts/krx_index.py
         continue-on-error: true
 
       - name: 모델 재학습
