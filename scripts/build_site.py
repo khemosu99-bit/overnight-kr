@@ -12,7 +12,7 @@ import requests
 ROOT = pathlib.Path(__file__).resolve().parent.parent
 SITE = ROOT / "site"
 SITE.mkdir(exist_ok=True)
-BASE = "https://nightgap.kr"
+BASE = "https://nightgap.co.kr"
 UA = {"User-Agent": "Mozilla/5.0"}
 KST = datetime.datetime.utcnow() + datetime.timedelta(hours=9)
 
@@ -409,7 +409,7 @@ page("코스피200 야간선물 제도 정리 (2026년 기준)",
      "guide.html", "/guide.html")
 
 # ── 방법론 ──
-page("방법론과 한계 | nightgap.kr",
+page("방법론과 한계 | nightgap.co.kr",
      "회귀 모델, 국면별 예측구간 산출 방법, 검증 후 기각한 가설, 그리고 이 모델의 한계를 공개합니다.",
      f'''<section><div class="eyebrow">데이터</div>
 <div class="kv"><span>출처</span><b>KRX 공식 Open API</b></div>
