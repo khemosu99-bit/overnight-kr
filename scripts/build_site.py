@@ -385,18 +385,38 @@ Yahoo Finance 값을 쓰되, KRX 공식값과 교차검증합니다. 두 값이 
 어긋나면 환산을 보류합니다.</p></section>
 
 <section><div class="eyebrow">두 개의 모델</div>
-<h2>정확한 모델은 제시간에 쓸 수 없습니다</h2>
-<table><thead><tr><th></th><th>Model 1</th><th>Model 2</th></tr></thead><tbody>
-<tr><td>입력</td><td>야간선물</td><td>EWY·반도체·나스닥</td></tr>
-<tr><td>사용 가능 시각</td><td>익일 08시</td><td class="yes">개장 전 07시</td></tr>
+<h2>야간선물을 대신하는 대용 지표를 씁니다</h2>
+<p style="color:var(--dim);font-size:.9rem;margin-bottom:14px">
+개장 갭을 가장 잘 설명하는 것은 <b style="color:var(--text)">코스피200 야간선물</b>입니다.
+그런데 그 데이터는 KRX가 <b style="color:var(--text)">익일 08시</b>에 공개합니다.
+개장 30분 전입니다. 그때는 이미 늦습니다.</p>
+<p style="color:var(--dim);font-size:.9rem;margin-bottom:14px">
+그래서 저희는 새벽 시간에 확보 가능한 <b style="color:var(--text)">대용 지표</b>를 씁니다.
+밤사이 한국 자산이 재평가된 결과를, 야간선물이 아닌 다른 시장에서 읽어오는 것입니다.</p>
+<table><thead><tr><th></th><th>Model 1 (원본)</th><th>Model 2 (대용)</th></tr></thead><tbody>
+<tr><td>입력</td><td>코스피200 야간선물</td><td>EWY·SOX·나스닥·환율</td></tr>
+<tr><td>확보 시각</td><td class="no">익일 08:00</td><td class="yes">새벽 06:00</td></tr>
 <tr><td>개장 갭 R²</td><td>0.67</td><td>0.40</td></tr>
 <tr><td>종가 R²</td><td>0.37</td><td>0.19</td></tr>
 <tr><td>장중 R²</td><td>0.02</td><td>0.02</td></tr>
+<tr><td>실사용</td><td>사후 검증·아카이브</td><td class="yes">대시보드</td></tr>
 </tbody></table>
 <p style="color:var(--dim);font-size:.88rem;margin-top:14px">
-야간선물 기준 모델이 더 정확하지만, 그 데이터는 개장 전에 구할 수 없습니다.
-그래서 그 시각에 확보 가능한 미국 지표로 환산하고, 정확도가 낮아지는 만큼
-<b style="color:var(--text)">오차범위를 넓게 잡습니다.</b></p></section>
+<b style="color:var(--text)">대용 지표로 원본 정보의 약 60%를 회수합니다.</b>
+나머지 40%는 잡지 못합니다. 국내 요인, 야간 세션의 한국인 수급,
+야간선물 고유의 베이시스가 여기 포함됩니다.</p>
+<p style="color:var(--dim);font-size:.88rem;margin-top:10px">
+그 손실만큼 <b style="color:var(--text)">오차범위를 넓게 잡습니다.</b>
+설명력이 떨어졌는데 오차범위를 그대로 두면, 그건 거짓말입니다.</p></section>
+
+<section><div class="eyebrow">각 대용 지표가 무엇을 대신하는가</div>
+<div class="kv"><span>EWY (미국상장 한국 ETF)</span><b>밤사이 한국 주식의 재평가</b></div>
+<div class="kv"><span>필라델피아 반도체 (SOX)</span><b>코스피 시총의 반도체 축</b></div>
+<div class="kv"><span>나스닥</span><b>글로벌 위험선호</b></div>
+<div class="kv"><span>달러/원</span><b>외국인 수급 방향</b></div>
+<p style="color:var(--dim);font-size:.88rem;margin-top:14px">
+야간선물이 밤새 반응하는 정보를, 이 지표들이 각자 다른 창구로 반영합니다.
+같은 사건을 다른 각도에서 측정하는 셈입니다.</p></section>
 
 <section><div class="eyebrow">검증 후 기각한 가설</div>
 <h2>시도했다가 데이터에 부정당한 것들</h2>
