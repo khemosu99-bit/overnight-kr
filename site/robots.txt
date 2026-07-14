@@ -4,4 +4,7 @@ Allow: /
 User-agent: Yeti
 Allow: /
 
+User-agent: Googlebot
+Allow: /
+
 Sitemap: https://nightgap.co.kr/sitemap.xml
