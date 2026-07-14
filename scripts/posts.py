@@ -79,7 +79,8 @@ def md(text):
         if re.match(r"^\d+\. ", s):
             if not in_ol:
                 close(); out.append("<ol>"); in_ol = True
-            out.append(f"<li>{inline(re.sub(r'^\d+\. ', '', s))}</li>"); continue
+            txt = re.sub(r"^\d+\. ", "", s)
+            out.append("<li>" + inline(txt) + "</li>"); continue
         close()
         out.append(f"<p>{inline(s)}</p>")
     if in_ul: out.append("</ul>")
