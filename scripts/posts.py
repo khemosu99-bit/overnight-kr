@@ -13,7 +13,7 @@ ROOT = pathlib.Path(__file__).resolve().parent.parent
 SITE = ROOT / "site"
 POSTS = ROOT / "posts"
 POSTS.mkdir(exist_ok=True)
-BASE = "https://nightgap.kr"
+BASE = "https://nightgap.co.kr"
 KST = datetime.datetime.utcnow() + datetime.timedelta(hours=9)
 
 CSS = (SITE / "index.html").read_text(encoding="utf-8").split("<style>")[1].split("</style>")[0]
