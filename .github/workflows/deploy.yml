@@ -49,11 +49,14 @@ jobs:
       - name: 확장 페이지 생성
         run: python scripts/pages.py
 
+      - name: 글 발행
+        run: python scripts/posts.py
+
       - name: 커밋
         run: |
           git config user.name "nightgap-bot"
           git config user.email "bot@users.noreply.github.com"
-          git add data/ site/
+          git add data/ site/ posts/
           git diff --staged --quiet || git commit -m "update $(date -u +%F)"
           git push || true
 
