@@ -1,5 +1,5 @@
 """
-nightgap.kr 사이트 빌더 v2
+nightgap.co.kr 사이트 빌더 v2
 - 새벽에 폰으로 보는 데이터 도구
 - 시그니처: 갭 자(Gap Ruler) — 불확실성을 눈에 보이게
 """
@@ -246,7 +246,7 @@ def page(title, desc, body, path, nav_on=""):
 <meta name="theme-color" content="#0B1120">
 <meta name="robots" content="index,follow,max-snippet:-1,max-image-preview:large">
 <style>{CSS}</style></head><body><div class="w">
-<header><div class="brand">nightgap<span>.kr</span></div>
+<header><div class="brand">nightgap<span>co.kr</span></div>
 <div class="tag">간밤 해외 지표로 오늘 코스피 개장 갭을 환산합니다</div>
 <nav>{nav}</nav></header>
 {body}
