@@ -23,6 +23,11 @@ if NAVER_VERIFY:
 if GOOGLE_VERIFY:
     _verify += f'<meta name="google-site-verification" content="{GOOGLE_VERIFY}">'
 
+_analytics = ""
+if GOATCOUNTER:
+    _analytics = (f'<script data-goatcounter="https://{GOATCOUNTER}.goatcounter.com/count"'
+                  f' async src="//gc.zgo.at/count.js"></script>')
+
 CSS = """
 @import url('https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css');
 @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;800&display=swap');
@@ -162,4 +167,4 @@ def shell(title, desc, body, path, site_dir, schema="", extra_css="", nav_on="")
 <footer>데이터 · 한국거래소 KRX Open API, Yahoo Finance<br>
 이 사이트는 과거 데이터의 통계적 관계만 계산합니다. 투자 조언이나 매매 권유가 아니며,
 투자 판단의 근거로 사용될 수 없습니다.<br>
-갱신 {kst:%Y-%m-%d %H:%M} KST</footer></div></body></html>''', encoding="utf-8")
+갱신 {kst:%Y-%m-%d %H:%M} KST</footer></div>{_analytics}</body></html>''', encoding="utf-8")
