@@ -40,16 +40,25 @@ def quote(sym):
 
 def kospi_latest():
     """최신 코스피 종가.
-    Yahoo ^KS11 종가는 KRX 공식값과 일치함을 8거래일 교차검증으로 확인했다.
-    KRX API는 익일 08시 공개라 개장 전에는 쓸 수 없으므로 기준 종가는 Yahoo를 쓴다."""
-    r = requests.get("https://query1.finance.yahoo.com/v8/finance/chart/^KS11",
-                     params={"interval": "1d", "range": "1mo"}, headers=UA, timeout=20)
-    res = r.json()["chart"]["result"][0]
-    ts = res["timestamp"]
-    cl = res["indicators"]["quote"][0]["close"]
-    rows = [((datetime.datetime.utcfromtimestamp(t) + datetime.timedelta(hours=9)).date(), c)
-            for t, c in zip(ts, cl) if c]
-    return rows[-1]
+
+    ⚠️ Yahoo 차트 API(/v8/chart)는 한국 지수의 전일 OHLC를 늦게 채운다.
+       Open/High/Low 가 0.00 으로 남아 그 날짜가 배열에서 통째로 빠진다.
+       (야후 웹 화면에서도 Open 0.00, Day's Range 0.00-0.00 으로 확인됨)
+
+       그래서 종가는 quote API(/v7/quote)의 regularMarketPrice 를 쓴다.
+       이 값은 한국장 마감 직후 즉시 반영되며, KRX 공식 종가와 일치한다.
+
+    ※ 시가(Open)는 Yahoo에서 절대 쓰지 않는다. KRX 공식만 사용한다.
+    """
+    r = requests.get("https://query1.finance.yahoo.com/v7/finance/quote",
+                     params={"symbols": "^KS11"}, headers=UA, timeout=20)
+    q = r.json()["quoteResponse"]["result"][0]
+    px = q.get("regularMarketPrice")
+    ts = q.get("regularMarketTime")
+    if not px or not ts:
+        raise ValueError("quote 응답에 종가 없음")
+    d = (datetime.datetime.utcfromtimestamp(ts) + datetime.timedelta(hours=9)).date()
+    return d, float(px)
 
 
 live, fail = {}, []
