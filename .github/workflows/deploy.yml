@@ -4,6 +4,11 @@ on:
   schedule:
     - cron: "0 22 * * 0-4"
     - cron: "0 0 * * 1-5"
+  push:
+    branches: [main]
+    paths:
+      - 'posts/**'
+      - 'scripts/**'
   workflow_dispatch:
 
 permissions:
