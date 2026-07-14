@@ -1,11 +1,10 @@
-<!DOCTYPE html><html lang="ko"><head>
-<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>코스피200 야간선물 제도 정리 (2026년 기준)</title><meta name="description" content="2025년 6월 9일 KRX 자체 야간 파생상품시장 전환 이후 기준. 거래시간 18:00~06:00, T+1 거래일 처리.">
-<link rel="canonical" href="https://nightgap.kr/guide.html">
-<meta property="og:title" content="코스피200 야간선물 제도 정리 (2026년 기준)"><meta property="og:description" content="2025년 6월 9일 KRX 자체 야간 파생상품시장 전환 이후 기준. 거래시간 18:00~06:00, T+1 거래일 처리.">
-<meta property="og:type" content="website"><meta property="og:url" content="https://nightgap.kr/guide.html">
-<meta name="theme-color" content="#0B1120">
-<meta name="robots" content="index,follow,max-snippet:-1,max-image-preview:large">
+<!DOCTYPE html><html lang="ko"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>월별 갭 아카이브 | nightgap.kr</title><meta name="description" content="코스피 개장 갭 월별 전체 기록. 야간선물 등락, 개장 갭, 장중 흐름, 종가를 일별로 보관합니다.">
+<link rel="canonical" href="https://nightgap.kr/archive/">
+<meta property="og:title" content="월별 갭 아카이브 | nightgap.kr"><meta property="og:description" content="코스피 개장 갭 월별 전체 기록. 야간선물 등락, 개장 갭, 장중 흐름, 종가를 일별로 보관합니다.">
+<meta property="og:type" content="article"><meta name="theme-color" content="#0B1120">
+<meta name="robots" content="index,follow,max-snippet:-1">
 <style>
 @import url('https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css');
 @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;800&display=swap');
@@ -128,44 +127,18 @@ footer a{color:var(--dim)}
 </style></head><body><div class="w">
 <header><div class="brand">nightgap<span>.kr</span></div>
 <div class="tag">간밤 해외 지표로 오늘 코스피 개장 갭을 환산합니다</div>
-<nav><a href="/" class="">대시보드</a><a href="/guide.html" class="on">야간선물 제도</a><a href="/methodology.html" class="">방법론과 한계</a></nav></header>
-<section><div class="eyebrow">먼저 알아야 할 것</div>
-<h2>제도가 바뀌었습니다</h2>
-<p style="color:var(--dim);font-size:.9rem;margin-bottom:14px">
-코스피200 야간선물을 검색하면 설명이 제각각입니다. 제도가 여러 번 바뀌었기 때문입니다.
-지금 보는 자료가 어느 시점 기준인지 확인하지 않으면 혼란스럽습니다.</p>
-<div class="kv"><span>2009년 ~</span><b>CME 연계 야간시장</b></div>
-<div class="kv"><span>이후</span><b>Eurex 연계 야간옵션</b></div>
-<div class="kv"><span>2023 ~ 2025.5</span><b style="color:var(--faint)">야간시장 공백기</b></div>
-<div class="kv"><span>2025.6.9 ~ 현재</span><b class="yes">KRX 자체 야간 파생상품시장</b></div>
-<p style="color:var(--dim);font-size:.86rem;margin-top:14px">
-증권사 안내 페이지 중에도 옛 CME 연계 시절 설명이 그대로 남아 있는 곳이 적지 않습니다.</p></section>
-
-<section><div class="eyebrow">거래시간</div>
-<div class="kv"><span>호가 접수</span><b>17:50 ~</b></div>
-<div class="kv"><span>거래시간</span><b>18:00 ~ 익일 06:00</b></div>
-<div class="kv"><span>총 운영</span><b>12시간</b></div>
-<div class="kv"><span>거래일 처리</span><b>T+1일</b></div>
-<p style="color:var(--dim);font-size:.88rem;margin-top:14px">
-월요일 저녁 6시에 시작한 야간거래는 <b style="color:var(--text)">화요일 거래</b>로 집계되어,
-화요일 정규거래분과 합산 정산됩니다.</p></section>
-
-<section><div class="eyebrow">취급 상품</div>
-<div class="kv"><span>지수선물</span><b>코스피200 · 미니코스피200 · 코스닥150</b></div>
-<div class="kv"><span>통화선물</span><b>미국달러선물</b></div>
-<div class="kv"><span>금리선물</span><b>3년 · 10년 국채선물</b></div></section>
-
-<section><div class="eyebrow">왜 보는가</div>
-<h2>한국 정규장이 닫힌 시간에도 가격은 움직입니다</h2>
-<p style="color:var(--dim);font-size:.9rem">
-야간 세션은 유럽·미국 거래시간과 겹칩니다. 한국 시장이 닫혀 있는 동안 나온 정보 —
-미국 고용지표, 연준 금리 결정, 반도체 업황 뉴스 — 가 한국 자산 가격에 반영되는 통로입니다.</p>
-<p style="color:var(--dim);font-size:.9rem;margin-top:10px">
-그래서 야간에 형성된 가격은 다음 날 개장가에 <b style="color:var(--text)">갭(Gap)</b> 형태로 나타납니다.
-<a href="/" style="color:var(--down)">대시보드</a>는 이 관계를 수치화한 것입니다.</p></section>
-<footer>
-데이터 · 한국거래소 KRX Open API, Yahoo Finance<br>
-이 사이트는 과거 데이터의 통계적 관계만 계산합니다. 투자 조언이나 매매 권유가 아니며,
-투자 판단의 근거로 사용될 수 없습니다.<br>
-갱신 2026-07-14 12:14 KST
-</footer></div></body></html>
+<nav><a href="/">대시보드</a><a href="/accuracy/">적중 기록</a><a href="/archive/">아카이브</a><a href="/guide.html">제도</a><a href="/methodology.html">방법론</a></nav></header>
+<section class="hero"><div class="eyebrow">아카이브</div>
+<div class="num mono" style="font-size:2.4rem">248일</div>
+<div class="band">기록된 거래일 · <b>2025.07 ~ 2026.07</b></div>
+</section>
+<section><div class="eyebrow">월별</div><div class="kv"><span><a href="/archive/2026-07/" style="color:var(--text);text-decoration:none">2026년 07월</a></span><b>8거래일 · 평균 갭 +0.24%</b></div><div class="kv"><span><a href="/archive/2026-06/" style="color:var(--text);text-decoration:none">2026년 06월</a></span><b>21거래일 · 평균 갭 +0.36%</b></div><div class="kv"><span><a href="/archive/2026-05/" style="color:var(--text);text-decoration:none">2026년 05월</a></span><b>18거래일 · 평균 갭 +1.05%</b></div><div class="kv"><span><a href="/archive/2026-04/" style="color:var(--text);text-decoration:none">2026년 04월</a></span><b>22거래일 · 평균 갭 +1.28%</b></div><div class="kv"><span><a href="/archive/2026-03/" style="color:var(--text);text-decoration:none">2026년 03월</a></span><b>21거래일 · 평균 갭 -0.46%</b></div><div class="kv"><span><a href="/archive/2026-02/" style="color:var(--text);text-decoration:none">2026년 02월</a></span><b>17거래일 · 평균 갭 +0.36%</b></div><div class="kv"><span><a href="/archive/2026-01/" style="color:var(--text);text-decoration:none">2026년 01월</a></span><b>21거래일 · 평균 갭 +0.30%</b></div><div class="kv"><span><a href="/archive/2025-12/" style="color:var(--text);text-decoration:none">2025년 12월</a></span><b>21거래일 · 평균 갭 +0.16%</b></div><div class="kv"><span><a href="/archive/2025-11/" style="color:var(--text);text-decoration:none">2025년 11월</a></span><b>20거래일 · 평균 갭 +0.26%</b></div><div class="kv"><span><a href="/archive/2025-10/" style="color:var(--text);text-decoration:none">2025년 10월</a></span><b>18거래일 · 평균 갭 +0.43%</b></div><div class="kv"><span><a href="/archive/2025-09/" style="color:var(--text);text-decoration:none">2025년 09월</a></span><b>22거래일 · 평균 갭 +0.21%</b></div><div class="kv"><span><a href="/archive/2025-08/" style="color:var(--text);text-decoration:none">2025년 08월</a></span><b>20거래일 · 평균 갭 +0.09%</b></div><div class="kv"><span><a href="/archive/2025-07/" style="color:var(--text);text-decoration:none">2025년 07월</a></span><b>19거래일 · 평균 갭 +0.19%</b></div></section>
+<section><div class="eyebrow">전체 통계</div>
+<div class="kv"><span>평균 개장 갭</span><b>+0.34%</b></div>
+<div class="kv"><span>갭상승 비율</span><b>63.3%</b></div>
+<div class="kv"><span>평균 장중 흐름</span><b>+0.05%</b></div>
+<div class="kv"><span>갭 표준편차</span><b>1.71%</b></div>
+</section>
+<footer>데이터 · 한국거래소 KRX Open API, Yahoo Finance<br>
+과거 데이터의 통계적 관계만 계산합니다. 투자 조언이 아닙니다.<br>
+갱신 2026-07-14 12:14 KST</footer></div></body></html>

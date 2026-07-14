@@ -1,11 +1,10 @@
-<!DOCTYPE html><html lang="ko"><head>
-<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>코스피200 야간선물 제도 정리 (2026년 기준)</title><meta name="description" content="2025년 6월 9일 KRX 자체 야간 파생상품시장 전환 이후 기준. 거래시간 18:00~06:00, T+1 거래일 처리.">
-<link rel="canonical" href="https://nightgap.kr/guide.html">
-<meta property="og:title" content="코스피200 야간선물 제도 정리 (2026년 기준)"><meta property="og:description" content="2025년 6월 9일 KRX 자체 야간 파생상품시장 전환 이후 기준. 거래시간 18:00~06:00, T+1 거래일 처리.">
-<meta property="og:type" content="website"><meta property="og:url" content="https://nightgap.kr/guide.html">
-<meta name="theme-color" content="#0B1120">
-<meta name="robots" content="index,follow,max-snippet:-1,max-image-preview:large">
+<!DOCTYPE html><html lang="ko"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>코스닥 개장 갭 | nightgap.kr</title><meta name="description" content="간밤 해외 지표로 보는 코스닥 개장 갭. 코스피 대비 설명력이 낮으며, 그 차이를 함께 공개합니다.">
+<link rel="canonical" href="https://nightgap.kr/kosdaq/">
+<meta property="og:title" content="코스닥 개장 갭 | nightgap.kr"><meta property="og:description" content="간밤 해외 지표로 보는 코스닥 개장 갭. 코스피 대비 설명력이 낮으며, 그 차이를 함께 공개합니다.">
+<meta property="og:type" content="article"><meta name="theme-color" content="#0B1120">
+<meta name="robots" content="index,follow,max-snippet:-1">
 <style>
 @import url('https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css');
 @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;800&display=swap');
@@ -128,44 +127,34 @@ footer a{color:var(--dim)}
 </style></head><body><div class="w">
 <header><div class="brand">nightgap<span>.kr</span></div>
 <div class="tag">간밤 해외 지표로 오늘 코스피 개장 갭을 환산합니다</div>
-<nav><a href="/" class="">대시보드</a><a href="/guide.html" class="on">야간선물 제도</a><a href="/methodology.html" class="">방법론과 한계</a></nav></header>
-<section><div class="eyebrow">먼저 알아야 할 것</div>
-<h2>제도가 바뀌었습니다</h2>
-<p style="color:var(--dim);font-size:.9rem;margin-bottom:14px">
-코스피200 야간선물을 검색하면 설명이 제각각입니다. 제도가 여러 번 바뀌었기 때문입니다.
-지금 보는 자료가 어느 시점 기준인지 확인하지 않으면 혼란스럽습니다.</p>
-<div class="kv"><span>2009년 ~</span><b>CME 연계 야간시장</b></div>
-<div class="kv"><span>이후</span><b>Eurex 연계 야간옵션</b></div>
-<div class="kv"><span>2023 ~ 2025.5</span><b style="color:var(--faint)">야간시장 공백기</b></div>
-<div class="kv"><span>2025.6.9 ~ 현재</span><b class="yes">KRX 자체 야간 파생상품시장</b></div>
-<p style="color:var(--dim);font-size:.86rem;margin-top:14px">
-증권사 안내 페이지 중에도 옛 CME 연계 시절 설명이 그대로 남아 있는 곳이 적지 않습니다.</p></section>
+<nav><a href="/">대시보드</a><a href="/accuracy/">적중 기록</a><a href="/archive/">아카이브</a><a href="/guide.html">제도</a><a href="/methodology.html">방법론</a></nav></header>
+<section class="hero"><div class="eyebrow">코스닥</div>
+<div class="num mono" style="font-size:2rem;line-height:1.3">코스피보다<br>덜 설명됩니다</div>
+<div class="band" style="margin-top:10px">개장 갭 R² <b>0.58</b> · 종가 R² <b>0.21</b></div>
+</section>
 
-<section><div class="eyebrow">거래시간</div>
-<div class="kv"><span>호가 접수</span><b>17:50 ~</b></div>
-<div class="kv"><span>거래시간</span><b>18:00 ~ 익일 06:00</b></div>
-<div class="kv"><span>총 운영</span><b>12시간</b></div>
-<div class="kv"><span>거래일 처리</span><b>T+1일</b></div>
-<p style="color:var(--dim);font-size:.88rem;margin-top:14px">
-월요일 저녁 6시에 시작한 야간거래는 <b style="color:var(--text)">화요일 거래</b>로 집계되어,
-화요일 정규거래분과 합산 정산됩니다.</p></section>
-
-<section><div class="eyebrow">취급 상품</div>
-<div class="kv"><span>지수선물</span><b>코스피200 · 미니코스피200 · 코스닥150</b></div>
-<div class="kv"><span>통화선물</span><b>미국달러선물</b></div>
-<div class="kv"><span>금리선물</span><b>3년 · 10년 국채선물</b></div></section>
-
-<section><div class="eyebrow">왜 보는가</div>
-<h2>한국 정규장이 닫힌 시간에도 가격은 움직입니다</h2>
+<section><div class="eyebrow">왜 다른가</div>
+<h2>코스닥은 국내 요인이 더 큽니다</h2>
 <p style="color:var(--dim);font-size:.9rem">
-야간 세션은 유럽·미국 거래시간과 겹칩니다. 한국 시장이 닫혀 있는 동안 나온 정보 —
-미국 고용지표, 연준 금리 결정, 반도체 업황 뉴스 — 가 한국 자산 가격에 반영되는 통로입니다.</p>
-<p style="color:var(--dim);font-size:.9rem;margin-top:10px">
-그래서 야간에 형성된 가격은 다음 날 개장가에 <b style="color:var(--text)">갭(Gap)</b> 형태로 나타납니다.
-<a href="/" style="color:var(--down)">대시보드</a>는 이 관계를 수치화한 것입니다.</p></section>
-<footer>
-데이터 · 한국거래소 KRX Open API, Yahoo Finance<br>
-이 사이트는 과거 데이터의 통계적 관계만 계산합니다. 투자 조언이나 매매 권유가 아니며,
-투자 판단의 근거로 사용될 수 없습니다.<br>
-갱신 2026-07-14 12:14 KST
-</footer></div></body></html>
+코스피는 삼성전자·SK하이닉스 등 미국 반도체 업황에 직결된 대형주 비중이 큽니다.
+반면 코스닥은 국내 중소형주·바이오·테마주 비중이 높아, 간밤 미국 지표로 설명되는 부분이 작습니다.</p>
+<div class="kv" style="margin-top:12px"><span>코스피 개장 갭 R²</span><b>0.67</b></div>
+<div class="kv"><span>코스닥 개장 갭 R²</span><b>0.58</b></div>
+<div class="kv"><span>코스피 종가 R²</span><b>0.37</b></div>
+<div class="kv"><span>코스닥 종가 R²</span><b>0.21</b></div></section>
+
+<section><div class="eyebrow">과거 사례 · 코스닥 종가</div>
+<table><thead><tr><th>간밤 조건</th><th>횟수</th><th>종가 평균</th><th>상승 마감</th></tr></thead><tbody>
+<tr><td>야간 +1% 이상</td><td>57</td><td class="up">+0.88%</td><td>61.4%</td></tr>
+<tr><td>야간 +0.3~1%</td><td>64</td><td class="up">+0.79%</td><td>67.2%</td></tr>
+<tr><td>야간 −0.3~−1%</td><td>36</td><td class="dn">−0.40%</td><td>41.7%</td></tr>
+<tr><td>야간 −1% 이하</td><td>36</td><td class="dn">−2.23%</td><td>33.3%</td></tr>
+</tbody></table></section>
+
+<section><div class="eyebrow">최근 15거래일</div>
+<table><thead><tr><th>날짜</th><th>개장 갭</th><th>장중</th><th>종가등락</th><th>코스닥</th></tr></thead><tbody>
+<tr><td>07-10</td><td class="up">+1.64%</td><td class="up">+3.77%</td><td class="up">+5.47%</td><td>837.4</td></tr><tr><td>07-09</td><td class="up">+1.02%</td><td class="up">+0.13%</td><td class="up">+1.15%</td><td>794.0</td></tr><tr><td>07-08</td><td class="dn">-1.79%</td><td class="dn">-3.84%</td><td class="dn">-5.56%</td><td>785.0</td></tr><tr><td>07-07</td><td class="dn">-0.39%</td><td class="dn">-1.48%</td><td class="dn">-1.87%</td><td>831.2</td></tr><tr><td>07-06</td><td class="dn">-0.23%</td><td class="dn">-2.23%</td><td class="dn">-2.46%</td><td>847.1</td></tr><tr><td>07-03</td><td class="up">+0.98%</td><td class="dn">-0.77%</td><td class="up">+0.19%</td><td>868.4</td></tr><tr><td>07-02</td><td class="dn">-2.67%</td><td class="dn">-4.18%</td><td class="dn">-6.74%</td><td>866.7</td></tr><tr><td>07-01</td><td class="up">+0.86%</td><td class="up">+0.57%</td><td class="up">+1.44%</td><td>929.4</td></tr><tr><td>06-30</td><td class="up">+0.50%</td><td class="dn">-0.98%</td><td class="dn">-0.48%</td><td>916.2</td></tr><tr><td>06-29</td><td class="up">+1.06%</td><td class="up">+6.99%</td><td class="up">+8.13%</td><td>920.6</td></tr><tr><td>06-26</td><td class="dn">-0.38%</td><td class="dn">-3.74%</td><td class="dn">-4.10%</td><td>851.4</td></tr><tr><td>06-25</td><td class="up">+1.58%</td><td class="dn">-3.88%</td><td class="dn">-2.36%</td><td>887.8</td></tr><tr><td>06-24</td><td class="up">+1.53%</td><td class="up">+0.46%</td><td class="up">+2.00%</td><td>909.3</td></tr><tr><td>06-23</td><td class="dn">-1.01%</td><td class="dn">-7.00%</td><td class="dn">-7.94%</td><td>891.5</td></tr><tr><td>06-22</td><td class="dn">-0.94%</td><td class="up">+1.14%</td><td class="up">+0.19%</td><td>968.4</td></tr>
+</tbody></table></section>
+<footer>데이터 · 한국거래소 KRX Open API, Yahoo Finance<br>
+과거 데이터의 통계적 관계만 계산합니다. 투자 조언이 아닙니다.<br>
+갱신 2026-07-14 12:14 KST</footer></div></body></html>

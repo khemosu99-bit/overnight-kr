@@ -1,11 +1,10 @@
-<!DOCTYPE html><html lang="ko"><head>
-<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>코스피200 야간선물 제도 정리 (2026년 기준)</title><meta name="description" content="2025년 6월 9일 KRX 자체 야간 파생상품시장 전환 이후 기준. 거래시간 18:00~06:00, T+1 거래일 처리.">
-<link rel="canonical" href="https://nightgap.kr/guide.html">
-<meta property="og:title" content="코스피200 야간선물 제도 정리 (2026년 기준)"><meta property="og:description" content="2025년 6월 9일 KRX 자체 야간 파생상품시장 전환 이후 기준. 거래시간 18:00~06:00, T+1 거래일 처리.">
-<meta property="og:type" content="website"><meta property="og:url" content="https://nightgap.kr/guide.html">
-<meta name="theme-color" content="#0B1120">
-<meta name="robots" content="index,follow,max-snippet:-1,max-image-preview:large">
+<!DOCTYPE html><html lang="ko"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>데이터 공개 | nightgap.kr</title><meta name="description" content="KRX 공식 야간선물·지수 데이터를 CSV로 공개합니다. 누구나 검증할 수 있습니다.">
+<link rel="canonical" href="https://nightgap.kr/data/">
+<meta property="og:title" content="데이터 공개 | nightgap.kr"><meta property="og:description" content="KRX 공식 야간선물·지수 데이터를 CSV로 공개합니다. 누구나 검증할 수 있습니다.">
+<meta property="og:type" content="article"><meta name="theme-color" content="#0B1120">
+<meta name="robots" content="index,follow,max-snippet:-1">
 <style>
 @import url('https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css');
 @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;800&display=swap');
@@ -128,44 +127,29 @@ footer a{color:var(--dim)}
 </style></head><body><div class="w">
 <header><div class="brand">nightgap<span>.kr</span></div>
 <div class="tag">간밤 해외 지표로 오늘 코스피 개장 갭을 환산합니다</div>
-<nav><a href="/" class="">대시보드</a><a href="/guide.html" class="on">야간선물 제도</a><a href="/methodology.html" class="">방법론과 한계</a></nav></header>
-<section><div class="eyebrow">먼저 알아야 할 것</div>
-<h2>제도가 바뀌었습니다</h2>
-<p style="color:var(--dim);font-size:.9rem;margin-bottom:14px">
-코스피200 야간선물을 검색하면 설명이 제각각입니다. 제도가 여러 번 바뀌었기 때문입니다.
-지금 보는 자료가 어느 시점 기준인지 확인하지 않으면 혼란스럽습니다.</p>
-<div class="kv"><span>2009년 ~</span><b>CME 연계 야간시장</b></div>
-<div class="kv"><span>이후</span><b>Eurex 연계 야간옵션</b></div>
-<div class="kv"><span>2023 ~ 2025.5</span><b style="color:var(--faint)">야간시장 공백기</b></div>
-<div class="kv"><span>2025.6.9 ~ 현재</span><b class="yes">KRX 자체 야간 파생상품시장</b></div>
-<p style="color:var(--dim);font-size:.86rem;margin-top:14px">
-증권사 안내 페이지 중에도 옛 CME 연계 시절 설명이 그대로 남아 있는 곳이 적지 않습니다.</p></section>
+<nav><a href="/">대시보드</a><a href="/accuracy/">적중 기록</a><a href="/archive/">아카이브</a><a href="/guide.html">제도</a><a href="/methodology.html">방법론</a></nav></header>
+<section class="hero"><div class="eyebrow">데이터 공개</div>
+<div class="num mono" style="font-size:2rem;line-height:1.3">검증하십시오</div>
+<div class="band" style="margin-top:10px">원본 데이터와 코드를 모두 공개합니다</div></section>
 
-<section><div class="eyebrow">거래시간</div>
-<div class="kv"><span>호가 접수</span><b>17:50 ~</b></div>
-<div class="kv"><span>거래시간</span><b>18:00 ~ 익일 06:00</b></div>
-<div class="kv"><span>총 운영</span><b>12시간</b></div>
-<div class="kv"><span>거래일 처리</span><b>T+1일</b></div>
-<p style="color:var(--dim);font-size:.88rem;margin-top:14px">
-월요일 저녁 6시에 시작한 야간거래는 <b style="color:var(--text)">화요일 거래</b>로 집계되어,
-화요일 정규거래분과 합산 정산됩니다.</p></section>
+<section><div class="eyebrow">공개하는 것</div>
+<div class="kv"><span>야간선물 일별 (KRX)</span><b>269일</b></div>
+<div class="kv"><span>코스피·코스닥 지수 (KRX)</span><b>268일</b></div>
+<div class="kv"><span>해외 지표 (Yahoo)</span><b>4종</b></div>
+<div class="kv"><span>분석 코드</span><b>전체 공개</b></div>
+<p style="color:var(--dim);font-size:.9rem;margin-top:14px">
+저희 주장을 믿지 마시고, 직접 확인하십시오.
+수집 스크립트부터 회귀 코드까지 전부 공개되어 있습니다.</p>
+<p style="margin-top:14px"><a href="https://github.com/khemosu99-bit/overnight-kr"
+ style="color:var(--down)">GitHub 저장소 →</a></p></section>
 
-<section><div class="eyebrow">취급 상품</div>
-<div class="kv"><span>지수선물</span><b>코스피200 · 미니코스피200 · 코스닥150</b></div>
-<div class="kv"><span>통화선물</span><b>미국달러선물</b></div>
-<div class="kv"><span>금리선물</span><b>3년 · 10년 국채선물</b></div></section>
-
-<section><div class="eyebrow">왜 보는가</div>
-<h2>한국 정규장이 닫힌 시간에도 가격은 움직입니다</h2>
-<p style="color:var(--dim);font-size:.9rem">
-야간 세션은 유럽·미국 거래시간과 겹칩니다. 한국 시장이 닫혀 있는 동안 나온 정보 —
-미국 고용지표, 연준 금리 결정, 반도체 업황 뉴스 — 가 한국 자산 가격에 반영되는 통로입니다.</p>
-<p style="color:var(--dim);font-size:.9rem;margin-top:10px">
-그래서 야간에 형성된 가격은 다음 날 개장가에 <b style="color:var(--text)">갭(Gap)</b> 형태로 나타납니다.
-<a href="/" style="color:var(--down)">대시보드</a>는 이 관계를 수치화한 것입니다.</p></section>
-<footer>
-데이터 · 한국거래소 KRX Open API, Yahoo Finance<br>
-이 사이트는 과거 데이터의 통계적 관계만 계산합니다. 투자 조언이나 매매 권유가 아니며,
-투자 판단의 근거로 사용될 수 없습니다.<br>
-갱신 2026-07-14 12:14 KST
-</footer></div></body></html>
+<section class="limit"><div class="eyebrow">출처와 한계</div>
+<ul>
+<li>야간선물·지수 데이터는 <b>한국거래소(KRX) Open API</b>의 공식 데이터입니다.</li>
+<li>해외 지표는 Yahoo Finance에서 수집하며, <b>비공식 경로</b>이므로 중단될 수 있습니다.</li>
+<li>KRX 데이터는 <b>익일 08시</b>에 갱신됩니다. 실시간이 아닙니다.</li>
+<li>데이터의 상업적 재배포는 각 제공처의 이용 조건을 따릅니다.</li>
+</ul></section>
+<footer>데이터 · 한국거래소 KRX Open API, Yahoo Finance<br>
+과거 데이터의 통계적 관계만 계산합니다. 투자 조언이 아닙니다.<br>
+갱신 2026-07-14 12:14 KST</footer></div></body></html>
