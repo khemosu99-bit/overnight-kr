@@ -247,6 +247,14 @@ for f, v, c in contrib:
 <div class="bar-lb"><span>갭 기여도</span><span class="{cls}">{c:+.2f}%p</span></div></div>'''
 
 at = max((live[f]["at"] for f in live), default=KST)
+# ── 지표 신선도 판정: 미국장이 마감된 이후의 값인가 ──
+hours_old = (KST - at).total_seconds() / 3600
+if hours_old > 20:
+    warn = (f"간밤 미국 지표가 {hours_old:.0f}시간 전 값입니다. "
+            f"미국장이 아직 마감되지 않았거나 데이터가 지연되었습니다")
+    print(f"  ⚠️ 지표 노후 {hours_old:.1f}시간")
+else:
+    print(f"  지표 신선도  {hours_old:.1f}시간 전 ({at:%m-%d %H:%M} KST 마감)")
 reg_rows = "".join(
     f'<tr><td>{k}{"<span class=now>현재</span>" if k == regime else ""}</td>'
     f'<td>{v["n"]}</td><td>{v["gap_r2"]:.2f}</td><td>±{1.28 * v["gap_se"]:.2f}%p</td></tr>'
@@ -260,7 +268,8 @@ BODY = f'''{hero}
 각 지표가 갭에 얼마나 기여했는지 분해했습니다. 막대가 오른쪽이면 갭을 위로,
 왼쪽이면 아래로 밀었다는 뜻입니다.</p>
 {inds}
-<div class="stamp">미국장 마감 기준 · {at:%m월 %d일 %H:%M} KST</div></section>
+<div class="stamp">미국장 마감 기준 · {at:%m월 %d일 %H:%M} KST
+&nbsp;({hours_old:.0f}시간 전)</div></section>
 
 <section><div class="eyebrow">국면별 정확도</div>
 <h2>계수는 같지만, 오차는 국면마다 다릅니다</h2>
