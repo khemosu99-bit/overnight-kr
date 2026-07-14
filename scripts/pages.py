@@ -40,7 +40,7 @@ def page(title, desc, body, path):
 <meta property="og:type" content="article"><meta name="theme-color" content="#0B1120">
 <meta name="robots" content="index,follow,max-snippet:-1">
 <style>{CSS}</style></head><body><div class="w">
-<header><div class="brand">nightgap<span>.kr</span></div>
+<header><div class="brand">nightgap<span>co.kr</span></div>
 <div class="tag">간밤 해외 지표로 오늘 코스피 개장 갭을 환산합니다</div>
 <nav>{nav}</nav></header>
 {body}
@@ -121,7 +121,7 @@ by_reg = "".join(
     f'<td>{s["dir"].mean()*100:.1f}%</td></tr>'
     for g, s in e.groupby("regime") if len(s) > 5)
 
-page("예측 적중 기록 | nightgap.kr",
+page("예측 적중 기록 | nightgap.co.kr",
      f"{n}거래일 전체 예측을 실제 결과와 대조합니다. 80% 구간 적중률 {hit:.1f}%, "
      f"평균 절대오차 {mae:.2f}%p. 틀린 날도 그대로 공개합니다.",
      f'''<section class="hero"><div class="eyebrow">예측 적중 기록</div>
@@ -236,7 +236,7 @@ page("월별 갭 아카이브 | nightgap.kr",
 
 # ═══════════ 3. /kosdaq/ ═══════════
 q = e.dropna(subset=["kosdaq_gap"])
-page("코스닥 개장 갭 | nightgap.kr",
+page("코스닥 개장 갭 | nightgap.co.kr",
      "간밤 해외 지표로 보는 코스닥 개장 갭. 코스피 대비 설명력이 낮으며, 그 차이를 함께 공개합니다.",
      f'''<section class="hero"><div class="eyebrow">코스닥</div>
 <div class="num mono" style="font-size:2rem;line-height:1.3">코스피보다<br>덜 설명됩니다</div>
