@@ -1,10 +1,11 @@
 <!DOCTYPE html><html lang="ko"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>글 | nightgap.kr</title><meta name="description" content="야간선물, 개장 갭, 해외 지표에 대한 해설과 기록.">
-<link rel="canonical" href="https://nightgap.kr/posts/">
-<meta property="og:title" content="글 | nightgap.kr"><meta property="og:description" content="야간선물, 개장 갭, 해외 지표에 대한 해설과 기록.">
+<title>글 | nightgap.kr</title><meta name="description" content="야간선물과 개장 갭에 대한 해설과 기록.">
+<link rel="canonical" href="https://nightgap.co.kr/posts/">
+<meta property="og:title" content="글 | nightgap.kr"><meta property="og:description" content="야간선물과 개장 갭에 대한 해설과 기록.">
 <meta property="og:type" content="article"><meta name="theme-color" content="#0B1120">
 <meta name="robots" content="index,follow,max-snippet:-1">
+
 <style>
 @import url('https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css');
 @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;800&display=swap');
@@ -125,35 +126,71 @@ footer a{color:var(--dim)}
   @keyframes up{from{opacity:0;transform:translateY(10px)}}
 }
 
-.prose h2{font-size:1.15rem;margin:30px 0 12px;padding-bottom:0;border:0;
-  letter-spacing:-.01em;color:var(--text)}
+.prose h2{font-size:1.18rem;margin:34px 0 12px;padding:0;border:0;
+  letter-spacing:-.01em;color:var(--text);scroll-margin-top:20px}
 .prose h2:first-child{margin-top:0}
-.prose h3{font-size:1rem;font-weight:600;margin:22px 0 8px;color:var(--text)}
+.prose h3{font-size:1.02rem;font-weight:600;margin:24px 0 8px;color:var(--text)}
 .prose p{color:var(--dim);margin:12px 0;line-height:1.85;font-size:.95rem}
 .prose strong{color:var(--text);font-weight:600}
 .prose ul,.prose ol{margin:12px 0 12px 20px;color:var(--dim);font-size:.95rem}
 .prose li{margin:7px 0;line-height:1.8}
-.prose a{color:var(--down);text-decoration:none;border-bottom:1px solid rgba(70,162,255,.3)}
-.prose a:hover{border-color:var(--down)}
+.prose a{color:var(--down);text-decoration:none;border-bottom:1px solid rgba(70,162,255,.32)}
 .prose code{font-family:var(--mono);background:var(--surf2);padding:2px 6px;
   border-radius:4px;font-size:.86em;color:var(--text)}
 .prose blockquote{border-left:3px solid var(--line);padding:4px 0 4px 16px;
   margin:18px 0;color:var(--faint);font-size:.93rem}
-.prose hr{border:0;border-top:1px solid var(--line);margin:26px 0}
-.prose table{margin:18px 0}
+.prose hr{border:0;border-top:1px solid var(--line);margin:28px 0}
+.prose table{margin:18px 0;width:100%}
+.prose thead th{font-size:.72rem}
+
+/* 핵심 요약 */
+.tldr{background:var(--surf2);border:1px solid #2E3D5C;border-radius:9px;
+  padding:17px 18px;margin:0 0 24px}
+.tldr .lb{font-size:.7rem;letter-spacing:.14em;color:var(--faint);
+  font-weight:700;margin-bottom:9px}
+.tldr p{color:var(--text);font-size:.96rem;margin:0 0 10px;line-height:1.75}
+.tldr ul{margin:0 0 0 18px;color:var(--dim);font-size:.9rem}
+.tldr li{margin:5px 0}
+
+/* 목차 */
+.toc{border:1px dashed var(--line);border-radius:9px;padding:15px 18px;margin:0 0 26px}
+.toc .lb{font-size:.7rem;letter-spacing:.14em;color:var(--faint);
+  font-weight:700;margin-bottom:9px}
+.toc ol{margin:0 0 0 18px;font-size:.9rem}
+.toc li{margin:5px 0}
+.toc a{color:var(--dim);text-decoration:none;border:0}
+.toc a:hover{color:var(--text)}
+
+/* 박스 */
+.box{border-radius:9px;padding:15px 17px;margin:20px 0;font-size:.92rem;line-height:1.75}
+.box .bt{font-weight:700;margin-bottom:7px;font-size:.92rem}
+.box p{margin:0;color:inherit;font-size:.92rem}
+.box ul{margin:8px 0 0 18px;font-size:.9rem}
+.box-info{background:rgba(70,162,255,.07);border:1px solid rgba(70,162,255,.28);color:var(--dim)}
+.box-info .bt{color:var(--down)}
+.box-warn{background:rgba(255,184,77,.07);border:1px solid rgba(255,184,77,.3);color:var(--dim)}
+.box-warn .bt{color:var(--warn)}
+.box-check{background:var(--surf2);border:1px solid var(--line);color:var(--dim)}
+.box-check .bt{color:var(--text)}
+.box-check ul{list-style:none;margin-left:0}
+.box-check li{padding:5px 0 5px 24px;position:relative}
+.box-check li:before{content:'☐';position:absolute;left:0;color:var(--faint);
+  font-family:var(--mono)}
+
+/* FAQ */
+.faq h2{margin-bottom:4px}
 .post-meta{color:var(--faint);font-size:.8rem;font-family:var(--mono);
   padding-bottom:16px;margin-bottom:22px;border-bottom:1px solid var(--line)}
 .post-item{display:block;padding:16px 0;border-bottom:1px solid var(--line);
   text-decoration:none;color:inherit}
 .post-item:last-child{border:0}
-.post-item h3{font-size:1rem;font-weight:600;color:var(--text);margin-bottom:5px;
-  letter-spacing:-.01em}
+.post-item h3{font-size:1rem;font-weight:600;color:var(--text);margin-bottom:5px}
 .post-item p{color:var(--dim);font-size:.87rem;line-height:1.6}
 .post-item time{font-family:var(--mono);font-size:.74rem;color:var(--faint);
   display:block;margin-top:7px}
 .post-item:hover h3{color:var(--down)}
 </style></head><body><div class="w">
-<header><div class="brand">nightgap<span>.kr</span></div>
+<header><div class="brand">nightgap<span>co.kr</span></div>
 <div class="tag">간밤 해외 지표로 오늘 코스피 개장 갭을 환산합니다</div>
 <nav><a href="/">대시보드</a><a href="/accuracy/">적중 기록</a><a href="/archive/">아카이브</a><a href="/posts/">글</a><a href="/methodology.html">방법론</a></nav></header>
 <section class="hero"><div class="eyebrow">글</div>
@@ -162,4 +199,4 @@ footer a{color:var(--dim)}
 <section><div class="eyebrow">전체</div><a class="post-item" href="/posts/야간선물-실시간-보는법/"><h3>야간선물 실시간으로 보는 법 (HTS 없이)</h3><p>코스피200 야간선물을 증권사 HTS 없이 확인하는 방법과, 각 방법의 한계를 정리했습니다.</p><time>2026-07-15</time></a></section>
 <footer>데이터 · 한국거래소 KRX Open API, Yahoo Finance<br>
 과거 데이터의 통계적 관계만 계산합니다. 투자 조언이 아닙니다.<br>
-갱신 2026-07-14 12:37 KST</footer></div></body></html>
+갱신 2026-07-14 22:55 KST</footer></div></body></html>
