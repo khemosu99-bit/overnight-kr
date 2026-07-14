@@ -253,7 +253,7 @@ def shell(title, desc, body, path, schema=""):
 <meta name="robots" content="index,follow,max-snippet:-1">
 {schema}
 <style>{CSS}{EXTRA}</style></head><body><div class="w">
-<header><div class="brand">nightgap<span>co.kr</span></div>
+<header><div class="brand">nightgap<span>.co.kr</span></div>
 <div class="tag">간밤 해외 지표로 오늘 코스피 개장 갭을 환산합니다</div>
 <nav>{nav}</nav></header>
 {body}
