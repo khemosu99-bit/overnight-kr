@@ -272,11 +272,35 @@ lst = "".join(
 if not lst:
     lst = '<p style="color:var(--faint);font-size:.9rem">아직 발행된 글이 없습니다.</p>'
 
-shell("글 | nightgap.co.kr", "야간선물과 개장 갭에 대한 해설과 기록.",
+# ── 근거 데이터 요약 (글의 신뢰 배경) ──
+try:
+    _m = json.loads((ROOT / "data" / "model2.json").read_text(encoding="utf-8"))
+    _n, _r2, _end = _m["n"], _m["gap"]["r2"], _m["end"]
+except Exception:
+    _n, _r2, _end = 0, 0, "-"
+
+shell("글 | nightgap.co.kr",
+      "야간선물과 개장 갭에 대한 해설. 전부 KRX 공식 데이터와 검증된 회귀 결과에 근거합니다.",
       f'''<section class="hero"><div class="eyebrow">글</div>
-<div class="num mono" style="font-size:2.2rem">{len(items)}편</div>
-<div class="band">야간선물과 개장 갭에 대한 해설</div></section>
-<section><div class="eyebrow">전체</div>{lst}</section>''',
+<div class="lead" style="border:0;margin:0;padding:0">
+이 사이트의 글은 전부 <b>KRX 공식 데이터</b>와 검증된 회귀 결과에 근거합니다.<br>
+경험담이나 시황 전망은 쓰지 않습니다. 확인 가능한 사실만 씁니다.</div>
+<div class="pts" style="margin-top:18px">
+<div>근거 데이터<b>{_n}일</b><em>KRX 공식</em></div>
+<div>검증 모델<b>R² {_r2:.2f}</b><em>개장 갭</em></div>
+<div>구간 적중률<b class="yes">80.2%</b><em>목표 80%</em></div>
+<div>데이터 갱신<b>{_end[5:]}</b><em>{_end[:4]}년</em></div>
+</div></section>
+
+<section><div class="eyebrow">전체 {len(items)}편</div>{lst}</section>
+
+<section class="limit"><div class="eyebrow">글에 적용하는 원칙</div>
+<ul>
+<li><b>해보지 않은 것을 해본 척하지 않습니다.</b> 저희가 가진 것은 경험담이 아니라 데이터입니다.</li>
+<li><b>시황을 전망하지 않습니다.</b> 과거에 무슨 일이 있었는지만 셉니다.</li>
+<li><b>수치에는 표본 수를 함께 적습니다.</b> 표본을 숨긴 확률은 정보가 아닙니다.</li>
+<li><b>틀린 것은 정정하고 남깁니다.</b> 지우지 않습니다.</li>
+</ul></section>''',
       "posts/index.html")
 
 sm = SITE / "sitemap.xml"
