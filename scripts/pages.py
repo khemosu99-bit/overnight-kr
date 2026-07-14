@@ -1,53 +1,27 @@
 """
 확장 페이지 생성기
-- /accuracy/   예측 적중 기록 (매일 누적) ⭐ 브랜드의 심장
-- /archive/YYYY-MM/  월별 갭 아카이브 (SEO 물량)
-- /kosdaq/     코스닥 대시보드
-- /data/       원본 데이터 공개
+- /accuracy/   예측 적중 기록 (매일 누적)
+- /archive/YYYY-MM/  월별 갭 아카이브
+- /kosdaq/     코스닥
+- /data/       데이터 공개
 """
 import json
 import pathlib
 import datetime
 import numpy as np
 import pandas as pd
+from theme import BASE, shell
 
 ROOT = pathlib.Path(__file__).resolve().parent.parent
 SITE = ROOT / "site"
-BASE = "https://nightgap.co.kr"
 KST = datetime.datetime.utcnow() + datetime.timedelta(hours=9)
 
 M = json.loads((ROOT / "data" / "model2.json").read_text(encoding="utf-8"))
 FEAT = M["features"]
-NAME = {"EWY_r": "EWY", "SOX_r": "반도체(SOX)", "NASDAQ_r": "나스닥",
-        "SP500_r": "S&P500", "USDKRW_r": "달러/원", "VIX_r": "VIX"}
-
-# build_site.py 의 CSS 를 재사용
-CSS = (SITE / "index.html").read_text(encoding="utf-8").split("<style>")[1].split("</style>")[0]
 
 
 def page(title, desc, body, path):
-    p = SITE / path
-    p.parent.mkdir(parents=True, exist_ok=True)
-    url = path.replace("index.html", "")
-    nav = "".join(f'<a href="{u}">{t}</a>' for u, t in [
-        ("/", "대시보드"), ("/accuracy/", "적중 기록"), ("/archive/", "아카이브"),
-        ("/guide.html", "제도"), ("/methodology.html", "방법론")])
-    p.write_text(f'''<!DOCTYPE html><html lang="ko"><head><meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
-<title>{title}</title><meta name="description" content="{desc}">
-<link rel="canonical" href="{BASE}/{url}">
-<meta property="og:title" content="{title}"><meta property="og:description" content="{desc}">
-<meta property="og:type" content="article"><meta name="theme-color" content="#0B1120">
-<meta name="robots" content="index,follow,max-snippet:-1">
-<style>{CSS}</style></head><body><div class="w">
-<header><div class="brand">nightgap<span>.co.kr</span></div>
-<div class="tag">간밤 해외 지표로 오늘 코스피 개장 갭을 환산합니다</div>
-<nav>{nav}</nav></header>
-{body}
-<footer>데이터 · 한국거래소 KRX Open API, Yahoo Finance<br>
-과거 데이터의 통계적 관계만 계산합니다. 투자 조언이 아닙니다.<br>
-갱신 {KST:%Y-%m-%d %H:%M} KST</footer></div></body></html>''', encoding="utf-8")
-    return url
+    shell(title, desc, body, path, SITE)
 
 
 # ═══════════ 데이터 준비 ═══════════
@@ -80,7 +54,7 @@ for f in FEAT:
 
 e = d.dropna(subset=["kospi_gap", "rv20"] + FEAT).copy()
 
-# ── 매일의 예측을 재현 (그날 국면 기준) ──
+
 def predict(row):
     rg = ("저변동" if row["rv20"] <= M["rv_lo"]
           else "고변동" if row["rv20"] >= M["rv_hi"] else "중변동")
@@ -95,8 +69,7 @@ e["err"] = (e["pred"] - e["kospi_gap"]).abs()
 e["hit"] = e["err"] <= e["band"]
 e["dir"] = (e["pred"] > 0) == (e["kospi_gap"] > 0)
 
-
-# ═══════════ 1. /accuracy/ ⭐ ═══════════
+# ═══════════ 1. /accuracy/ ═══════════
 n = len(e)
 hit = e["hit"].mean() * 100
 mae = e["err"].mean()
@@ -116,7 +89,8 @@ rows = "".join(
     for _, r in e.tail(30).iloc[::-1].iterrows())
 
 by_reg = "".join(
-    f'<tr><td>{g}</td><td>{len(s)}</td><td class="{"yes" if 75<=s["hit"].mean()*100<=87 else "no"}">'
+    f'<tr><td>{g}</td><td>{len(s)}</td>'
+    f'<td class="{"yes" if 75 <= s["hit"].mean()*100 <= 87 else "no"}">'
     f'{s["hit"].mean()*100:.1f}%</td><td>{s["err"].mean():.2f}%p</td>'
     f'<td>{s["dir"].mean()*100:.1f}%</td></tr>'
     for g, s in e.groupby("regime") if len(s) > 5)
@@ -125,11 +99,12 @@ page("예측 적중 기록 | nightgap.co.kr",
      f"{n}거래일 전체 예측을 실제 결과와 대조합니다. 80% 구간 적중률 {hit:.1f}%, "
      f"평균 절대오차 {mae:.2f}%p. 틀린 날도 그대로 공개합니다.",
      f'''<section class="hero"><div class="eyebrow">예측 적중 기록</div>
+<div class="lead">저희는 매일 <b>"80% 확률로 이 범위 안"</b>이라고 말합니다.<br>
+그 약속이 실제로 지켜졌는지를 전체 표본에 대해 검증한 것이 이 페이지입니다.</div>
 <div class="num mono {vcol}">{hit:.1f}%</div>
 <div class="band">80% 구간 적중률 · 표본 <b>{n}일</b></div>
-<div class="zero-warn" style="color:var(--{'good' if vcol=='yes' else 'up'});
- background:rgba(61,214,140,.08);border-color:rgba(61,214,140,.3)">
-{verdict}</div>
+<div class="zero-warn" style="color:var(--{'good' if vcol == 'yes' else 'up'});
+ background:rgba(61,214,140,.08);border-color:rgba(61,214,140,.3)">{verdict}</div>
 <div class="stat">
 <div>평균 절대오차<b>{mae:.2f}%p</b></div>
 <div>RMSE<b>{rmse:.2f}%p</b></div>
@@ -139,12 +114,11 @@ page("예측 적중 기록 | nightgap.co.kr",
 <section><div class="eyebrow">이 페이지의 존재 이유</div>
 <h2>80%라고 했으면 80%가 맞아야 합니다</h2>
 <p style="color:var(--dim);font-size:.9rem">
-저희는 매일 "80% 확률로 이 범위 안"이라고 말합니다. 그 약속이 실제로 지켜지는지를
-전체 표본에 대해 검증한 것이 이 페이지입니다.</p>
-<p style="color:var(--dim);font-size:.9rem;margin-top:10px">
 적중률이 80%보다 <b style="color:var(--text)">낮으면</b> 모델이 자신을 과신하는 것이고,
-<b style="color:var(--text)">높으면</b> 오차를 지나치게 넓게 잡은 것입니다. 둘 다 문제입니다.
-<b style="color:var(--text)">틀린 날을 지우지 않습니다.</b></p></section>
+<b style="color:var(--text)">높으면</b> 오차를 지나치게 넓게 잡은 것입니다. 둘 다 문제입니다.</p>
+<p style="color:var(--dim);font-size:.9rem;margin-top:10px">
+<b style="color:var(--text)">틀린 날을 지우지 않습니다.</b>
+아래 표에 벗어난 날이 그대로 남아 있습니다.</p></section>
 
 <section><div class="eyebrow">국면별 적중률</div>
 <table><thead><tr><th>국면</th><th>표본</th><th>구간 적중</th><th>평균오차</th><th>방향</th></tr></thead>
@@ -160,29 +134,24 @@ page("예측 적중 기록 | nightgap.co.kr",
 
 # ═══════════ 2. /archive/YYYY-MM/ ═══════════
 e["ym"] = e["date"].dt.to_period("M")
-months = sorted(e["ym"].unique(), reverse=True)
+months = [m for m in sorted(e["ym"].unique(), reverse=True) if len(e[e["ym"] == m]) >= 3]
 
 for ym in months:
     s = e[e["ym"] == ym]
-    if len(s) < 3:
-        continue
     y, mo = str(ym).split("-")
-    up = (s["kospi_gap"] > 0).sum()
-    rows = "".join(
-        f'<tr><td>{r["date"]:%m-%d (%a)}</td>'
-        f'<td class="{"up" if r["night_r"]>=0 else "dn"}">'
-        f'{r["night_r"]:+.2f}%</td>' if pd.notna(r["night_r"]) else '<td>—</td>'
-        for _, r in s.iterrows())
-    body_rows = "".join(
-        f'<tr><td>{r["date"]:%m-%d}</td>'
-        + (f'<td class="{"up" if r["night_r"]>=0 else "dn"}">{r["night_r"]:+.2f}%</td>'
-           if pd.notna(r["night_r"]) else '<td style="color:var(--faint)">—</td>')
-        + f'<td class="{"up" if r["kospi_gap"]>=0 else "dn"}">{r["kospi_gap"]:+.2f}%</td>'
-          f'<td class="{"up" if r["kospi_intra"]>=0 else "dn"}">{r["kospi_intra"]:+.2f}%</td>'
-          f'<td class="{"up" if r["kospi_full"]>=0 else "dn"}">{r["kospi_full"]:+.2f}%</td>'
-          f'<td>{r["kospi_close"]:,.0f}</td></tr>'
-        for _, r in s.iterrows())
-    page(f"{y}년 {int(mo)}월 코스피 개장 갭 기록 | nightgap.kr",
+    up = int((s["kospi_gap"] > 0).sum())
+    body_rows = ""
+    for _, r in s.iterrows():
+        nr = (f'<td class="{"up" if r["night_r"] >= 0 else "dn"}">{r["night_r"]:+.2f}%</td>'
+              if pd.notna(r["night_r"]) else '<td style="color:var(--faint)">—</td>')
+        body_rows += (
+            f'<tr><td>{r["date"]:%m-%d}</td>{nr}'
+            f'<td class="{"up" if r["kospi_gap"] >= 0 else "dn"}">{r["kospi_gap"]:+.2f}%</td>'
+            f'<td class="{"up" if r["kospi_intra"] >= 0 else "dn"}">{r["kospi_intra"]:+.2f}%</td>'
+            f'<td class="{"up" if r["kospi_full"] >= 0 else "dn"}">{r["kospi_full"]:+.2f}%</td>'
+            f'<td>{r["kospi_close"]:,.0f}</td></tr>')
+
+    page(f"{y}년 {int(mo)}월 코스피 개장 갭 기록 | nightgap.co.kr",
          f"{y}년 {int(mo)}월 코스피 개장 갭 전체 기록. {len(s)}거래일 중 갭상승 {up}일. "
          f"야간선물 등락, 개장 갭, 장중 흐름, 종가를 일별로 정리했습니다.",
          f'''<section class="hero"><div class="eyebrow">월별 아카이브</div>
@@ -190,9 +159,9 @@ for ym in months:
 <div class="band">코스피 개장 갭 · <b>{len(s)}거래일</b></div>
 <div class="stat">
 <div>갭상승<b class="up">{up}일</b></div>
-<div>갭하락<b class="dn">{len(s)-up}일</b></div>
+<div>갭하락<b class="dn">{len(s) - up}일</b></div>
 <div>평균 갭<b>{s["kospi_gap"].mean():+.2f}%</b></div>
-<div>월 등락<b class="{'up' if s["kospi_full"].sum()>=0 else 'dn'}">{s["kospi_full"].sum():+.1f}%</b></div>
+<div>월 등락<b class="{'up' if s["kospi_full"].sum() >= 0 else 'dn'}">{s["kospi_full"].sum():+.1f}%</b></div>
 </div></section>
 
 <section><div class="eyebrow">일별 기록</div>
@@ -208,18 +177,18 @@ for ym in months:
 <div class="kv"><span>최대 갭상승</span><b class="up">{s["kospi_gap"].max():+.2f}%</b></div>
 <div class="kv"><span>최대 갭하락</span><b class="dn">{s["kospi_gap"].min():+.2f}%</b></div>
 <div class="kv"><span>평균 장중 흐름</span><b>{s["kospi_intra"].mean():+.2f}%</b></div>
-<div class="kv"><span>모델 구간 적중률</span><b class="{"yes" if s["hit"].mean()>0.7 else "no"}">{s["hit"].mean()*100:.0f}%</b></div>
+<div class="kv"><span>모델 구간 적중률</span>
+<b class="{"yes" if s["hit"].mean() > 0.7 else "no"}">{s["hit"].mean()*100:.0f}%</b></div>
 </section>''',
          f"archive/{ym}/index.html")
 
-# ── 아카이브 인덱스 ──
 mlist = "".join(
     f'<div class="kv"><span><a href="/archive/{ym}/" style="color:var(--text);'
     f'text-decoration:none">{str(ym).replace("-", "년 ")}월</a></span>'
-    f'<b>{len(e[e["ym"]==ym])}거래일 · 평균 갭 {e[e["ym"]==ym]["kospi_gap"].mean():+.2f}%</b></div>'
-    for ym in months if len(e[e["ym"] == ym]) >= 3)
+    f'<b>{len(e[e["ym"] == ym])}거래일 · 평균 갭 {e[e["ym"] == ym]["kospi_gap"].mean():+.2f}%</b></div>'
+    for ym in months)
 
-page("월별 갭 아카이브 | nightgap.kr",
+page("월별 갭 아카이브 | nightgap.co.kr",
      "코스피 개장 갭 월별 전체 기록. 야간선물 등락, 개장 갭, 장중 흐름, 종가를 일별로 보관합니다.",
      f'''<section class="hero"><div class="eyebrow">아카이브</div>
 <div class="num mono" style="font-size:2.4rem">{len(e)}일</div>
@@ -228,7 +197,7 @@ page("월별 갭 아카이브 | nightgap.kr",
 <section><div class="eyebrow">월별</div>{mlist}</section>
 <section><div class="eyebrow">전체 통계</div>
 <div class="kv"><span>평균 개장 갭</span><b>{e["kospi_gap"].mean():+.2f}%</b></div>
-<div class="kv"><span>갭상승 비율</span><b>{(e["kospi_gap"]>0).mean()*100:.1f}%</b></div>
+<div class="kv"><span>갭상승 비율</span><b>{(e["kospi_gap"] > 0).mean()*100:.1f}%</b></div>
 <div class="kv"><span>평균 장중 흐름</span><b>{e["kospi_intra"].mean():+.2f}%</b></div>
 <div class="kv"><span>갭 표준편차</span><b>{e["kospi_gap"].std():.2f}%</b></div>
 </section>''',
@@ -236,11 +205,21 @@ page("월별 갭 아카이브 | nightgap.kr",
 
 # ═══════════ 3. /kosdaq/ ═══════════
 q = e.dropna(subset=["kosdaq_gap"])
+kq_rows = "".join(
+    f'<tr><td>{r["date"]:%m-%d}</td>'
+    f'<td class="{"up" if r["kosdaq_gap"] >= 0 else "dn"}">{r["kosdaq_gap"]:+.2f}%</td>'
+    f'<td class="{"up" if r["kosdaq_intra"] >= 0 else "dn"}">{r["kosdaq_intra"]:+.2f}%</td>'
+    f'<td class="{"up" if r["kosdaq_full"] >= 0 else "dn"}">{r["kosdaq_full"]:+.2f}%</td>'
+    f'<td>{r["kosdaq_close"]:,.1f}</td></tr>'
+    for _, r in q.tail(15).iloc[::-1].iterrows())
+
 page("코스닥 개장 갭 | nightgap.co.kr",
      "간밤 해외 지표로 보는 코스닥 개장 갭. 코스피 대비 설명력이 낮으며, 그 차이를 함께 공개합니다.",
      f'''<section class="hero"><div class="eyebrow">코스닥</div>
-<div class="num mono" style="font-size:2rem;line-height:1.3">코스피보다<br>덜 설명됩니다</div>
-<div class="band" style="margin-top:10px">개장 갭 R² <b>0.58</b> · 종가 R² <b>0.21</b></div>
+<div class="lead">같은 방법을 코스닥에 적용하면 <b>설명력이 떨어집니다.</b><br>
+그 사실을 숨기지 않고 그대로 보여드립니다.</div>
+<div class="num mono" style="font-size:1.9rem;line-height:1.35">코스피보다<br>덜 설명됩니다</div>
+<div class="band" style="margin-top:12px">개장 갭 R² <b>0.58</b> · 종가 R² <b>0.21</b></div>
 </section>
 
 <section><div class="eyebrow">왜 다른가</div>
@@ -248,7 +227,7 @@ page("코스닥 개장 갭 | nightgap.co.kr",
 <p style="color:var(--dim);font-size:.9rem">
 코스피는 삼성전자·SK하이닉스 등 미국 반도체 업황에 직결된 대형주 비중이 큽니다.
 반면 코스닥은 국내 중소형주·바이오·테마주 비중이 높아, 간밤 미국 지표로 설명되는 부분이 작습니다.</p>
-<div class="kv" style="margin-top:12px"><span>코스피 개장 갭 R²</span><b>0.67</b></div>
+<div class="kv" style="margin-top:14px"><span>코스피 개장 갭 R²</span><b>0.67</b></div>
 <div class="kv"><span>코스닥 개장 갭 R²</span><b>0.58</b></div>
 <div class="kv"><span>코스피 종가 R²</span><b>0.37</b></div>
 <div class="kv"><span>코스닥 종가 R²</span><b>0.21</b></div></section>
@@ -262,32 +241,25 @@ page("코스닥 개장 갭 | nightgap.co.kr",
 </tbody></table></section>
 
 <section><div class="eyebrow">최근 15거래일</div>
-<table><thead><tr><th>날짜</th><th>개장 갭</th><th>장중</th><th>종가등락</th><th>코스닥</th></tr></thead><tbody>
-{"".join(f'<tr><td>{r["date"]:%m-%d}</td>'
-         f'<td class="{"up" if r["kosdaq_gap"]>=0 else "dn"}">{r["kosdaq_gap"]:+.2f}%</td>'
-         f'<td class="{"up" if r["kosdaq_intra"]>=0 else "dn"}">{r["kosdaq_intra"]:+.2f}%</td>'
-         f'<td class="{"up" if r["kosdaq_full"]>=0 else "dn"}">{r["kosdaq_full"]:+.2f}%</td>'
-         f'<td>{r["kosdaq_close"]:,.1f}</td></tr>'
-         for _, r in q.tail(15).iloc[::-1].iterrows())}
-</tbody></table></section>''',
+<table><thead><tr><th>날짜</th><th>개장 갭</th><th>장중</th><th>종가등락</th><th>코스닥</th></tr></thead>
+<tbody>{kq_rows}</tbody></table></section>''',
      "kosdaq/index.html")
 
 # ═══════════ 4. /data/ ═══════════
-page("데이터 공개 | nightgap.kr",
-     "KRX 공식 야간선물·지수 데이터를 CSV로 공개합니다. 누구나 검증할 수 있습니다.",
+page("데이터 공개 | nightgap.co.kr",
+     "KRX 공식 야간선물·지수 데이터와 분석 코드를 전부 공개합니다. 누구나 검증할 수 있습니다.",
      f'''<section class="hero"><div class="eyebrow">데이터 공개</div>
-<div class="num mono" style="font-size:2rem;line-height:1.3">검증하십시오</div>
-<div class="band" style="margin-top:10px">원본 데이터와 코드를 모두 공개합니다</div></section>
+<div class="lead">저희 주장을 믿지 마시고, <b>직접 확인하십시오.</b><br>
+수집 스크립트부터 회귀 코드까지 전부 공개되어 있습니다.</div>
+<div class="num mono" style="font-size:1.9rem;line-height:1.35">검증하십시오</div>
+</section>
 
 <section><div class="eyebrow">공개하는 것</div>
 <div class="kv"><span>야간선물 일별 (KRX)</span><b>{len(nf)}일</b></div>
 <div class="kv"><span>코스피·코스닥 지수 (KRX)</span><b>{len(kr)}일</b></div>
 <div class="kv"><span>해외 지표 (Yahoo)</span><b>{len(FEAT)}종</b></div>
 <div class="kv"><span>분석 코드</span><b>전체 공개</b></div>
-<p style="color:var(--dim);font-size:.9rem;margin-top:14px">
-저희 주장을 믿지 마시고, 직접 확인하십시오.
-수집 스크립트부터 회귀 코드까지 전부 공개되어 있습니다.</p>
-<p style="margin-top:14px"><a href="https://github.com/khemosu99-bit/overnight-kr"
+<p style="margin-top:16px"><a href="https://github.com/khemosu99-bit/overnight-kr"
  style="color:var(--down)">GitHub 저장소 →</a></p></section>
 
 <section class="limit"><div class="eyebrow">출처와 한계</div>
@@ -299,10 +271,10 @@ page("데이터 공개 | nightgap.kr",
 </ul></section>''',
      "data/index.html")
 
-# ═══════════ 사이트맵 갱신 ═══════════
+# ═══════════ 사이트맵 ═══════════
 today = KST.strftime("%Y-%m-%d")
 urls = ["", "guide.html", "methodology.html", "accuracy/", "archive/", "kosdaq/", "data/"]
-urls += [f"archive/{ym}/" for ym in months if len(e[e["ym"] == ym]) >= 3]
+urls += [f"archive/{ym}/" for ym in months]
 (SITE / "sitemap.xml").write_text(
     '<?xml version="1.0" encoding="UTF-8"?>'
     '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">' +
@@ -313,10 +285,10 @@ urls += [f"archive/{ym}/" for ym in months if len(e[e["ym"] == ym]) >= 3]
 
 print("=" * 62)
 print(f"  페이지 생성 완료")
-print(f"    /accuracy/     구간 적중률 {hit:.1f}%  (목표 80%)")
-print(f"                   평균오차 {mae:.2f}%p · 방향 {dirr:.1f}%")
-print(f"    /archive/      {len([m for m in months if len(e[e['ym']==m])>=3])}개월")
+print(f"    /accuracy/   구간 적중률 {hit:.1f}%  (목표 80%)")
+print(f"                 평균오차 {mae:.2f}%p · 방향 {dirr:.1f}%")
+print(f"    /archive/    {len(months)}개월")
 print(f"    /kosdaq/  /data/")
-print(f"    sitemap.xml    {len(urls)}개 URL")
+print(f"    sitemap      {len(urls)}개 URL")
 print("=" * 62)
-print(f"\n  ⚠️ 판정: {verdict}")
+print(f"\n  판정: {verdict}")
