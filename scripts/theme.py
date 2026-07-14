@@ -25,7 +25,7 @@ if GOOGLE_VERIFY:
 
 _analytics = ""
 if GOATCOUNTER:
-    _analytics = (f'<script data-goatcounter="https://{GOATCOUNTER}.goatcounter.com/count"'
+    _analytics = (f'<script data-goatcounter="https://nightgap.goatcounter.com/count"'
                   f' async src="//gc.zgo.at/count.js"></script>')
 
 CSS = """
