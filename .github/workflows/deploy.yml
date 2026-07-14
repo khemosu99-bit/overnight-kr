@@ -2,7 +2,8 @@ name: Build & Deploy
 
 on:
   schedule:
-    - cron: "0 0 * * 1-5"      # 09:00 KST (KRX 08시 갱신 후)
+    - cron: "0 22 * * 0-4"    # 07:00 KST (골든타임 직전)
+    - cron: "0 0 * * 1-5"     # 09:00 KST (KRX 갱신 후)
   workflow_dispatch:
 
 permissions:
@@ -24,20 +25,31 @@ jobs:
           python-version: "3.11"
       - run: pip install -r requirements.txt
 
-      - name: KRX 신규 데이터 수집
+      - name: 해외지표 수집
+        run: python scripts/collect_overnight.py
+        continue-on-error: true
+
+      - name: KRX 수집
         env:
           KRX_AUTH_KEY: ${{ secrets.KRX_AUTH_KEY }}
         run: python scripts/krx_history.py
+        continue-on-error: true
+
+      - name: 모델 재학습
+        env:
+          KRX_AUTH_KEY: ${{ secrets.KRX_AUTH_KEY }}
+        run: python scripts/realtime_model.py
+        continue-on-error: true
 
       - name: 사이트 빌드
         run: python scripts/build_site.py
 
-      - name: 데이터 커밋
+      - name: 커밋
         run: |
-          git config user.name  "site-bot"
+          git config user.name  "nightgap-bot"
           git config user.email "bot@users.noreply.github.com"
           git add data/ site/
-          git diff --staged --quiet || git commit -m "update: $(date -u +%F)"
+          git diff --staged --quiet || git commit -m "update $(date -u +%F)"
           git push || true
 
       - uses: actions/configure-pages@v5
@@ -50,7 +62,7 @@ jobs:
     runs-on: ubuntu-latest
     environment:
       name: github-pages
-      url: ${{ steps.dep.outputs.page_url }}
+      url: ${{ steps.d.outputs.page_url }}
     steps:
-      - id: dep
+      - id: d
         uses: actions/deploy-pages@v4
