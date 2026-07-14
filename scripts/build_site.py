@@ -1,18 +1,18 @@
 """
-nightgap.co.kr 사이트 빌더 v2
-- 새벽에 폰으로 보는 데이터 도구
-- 시그니처: 갭 자(Gap Ruler) — 불확실성을 눈에 보이게
+nightgap.co.kr 대시보드 빌더 v3
+- 정의·해석법을 먼저 설명하고, 포인트 숫자까지 보여준다
+- 테마는 theme.py 에서 공통 관리
 """
 import json
 import pathlib
 import datetime
 import pandas as pd
 import requests
+from theme import BASE, shell
 
 ROOT = pathlib.Path(__file__).resolve().parent.parent
 SITE = ROOT / "site"
 SITE.mkdir(exist_ok=True)
-BASE = "https://nightgap.co.kr"
 UA = {"User-Agent": "Mozilla/5.0"}
 KST = datetime.datetime.utcnow() + datetime.timedelta(hours=9)
 
@@ -27,7 +27,6 @@ DESC = {"EWY_r": "미국 상장 한국 ETF", "SOX_r": "필라델피아 반도체
         "USDKRW_r": "원달러 환율", "VIX_r": "변동성지수"}
 
 
-# ═══════════ 1. 실시간 수집 ═══════════
 def quote(sym):
     r = requests.get(f"https://query1.finance.yahoo.com/v8/finance/chart/{sym}",
                      params={"interval": "1d", "range": "5d"}, headers=UA, timeout=20)
@@ -42,23 +41,24 @@ live, fail = {}, []
 for f in FEAT:
     try:
         live[f] = quote(SYM[f])
-        print(f"  OK  {NAME[f]:<12} {live[f]['price']:>11,.2f}  {live[f]['pct']:+.2f}%")
+        print(f"  OK   {NAME[f]:<12} {live[f]['price']:>11,.2f}  {live[f]['pct']:+.2f}%")
     except Exception as e:
         fail.append(f)
         print(f"  FAIL {NAME[f]:<12} {e}")
 
-# ═══════════ 2. 국면 판정 ═══════════
+# ── 국면 ──
 kr = pd.read_csv(ROOT / "data" / "kr_index.csv", parse_dates=["date"]).sort_values("date")
 kr["r"] = kr["kospi_close"].pct_change() * 100
 rv = float(kr["r"].rolling(20).std().iloc[-1])
 regime = "저변동" if rv <= M["rv_lo"] else ("고변동" if rv >= M["rv_hi"] else "중변동")
 R = M["regimes"][regime]
+last_close = float(kr["kospi_close"].iloc[-1])
+last_date = kr["date"].iloc[-1]
 
-# ═══════════ 3. 환산 + 기여도 분해 ═══════════
+# ── 환산 ──
 ok = not fail
 gap = lo = hi = None
-contrib = []
-warn = None
+contrib, warn = [], None
 if ok:
     co = R["gap_coef"]
     gap = co[0]
@@ -72,32 +72,28 @@ if ok:
         if abs(live[f]["pct"]) > 6:
             warn = f"{NAME[f]} 등락 {live[f]['pct']:+.1f}%는 과거 관측 범위를 벗어납니다"
 
-crosses_zero = ok and lo < 0 < hi
+crosses = ok and lo < 0 < hi
 
 
-# ═══════════ 4. 시그니처: 갭 자 ═══════════
 def ruler(gap, lo, hi):
     W, H = 640, 132
     span = max(3.0, abs(lo) * 1.35, abs(hi) * 1.35)
     px = lambda v: W / 2 + (v / span) * (W / 2 - 30)
-    up = gap >= 0
-    col = "var(--up)" if up else "var(--down)"
-    bx0, bx1 = px(lo), px(hi)
+    col = "var(--up)" if gap >= 0 else "var(--down)"
+    b0, b1 = px(lo), px(hi)
     ticks = "".join(
         f'<line x1="{px(t)}" y1="74" x2="{px(t)}" y2="80" stroke="var(--faint)" stroke-width="1"/>'
-        f'<text x="{px(t)}" y="98" fill="var(--faint)" font-size="11" '
-        f'text-anchor="middle" class="mono">{t:+.0f}%</text>'
+        f'<text x="{px(t)}" y="98" fill="var(--faint)" font-size="11" text-anchor="middle" '
+        f'class="mono">{t:+.0f}%</text>'
         for t in [-span * .66, -span * .33, span * .33, span * .66])
     return f'''<svg viewBox="0 0 {W} {H}" class="ruler" role="img"
  aria-label="개장 갭 예상 {gap:+.2f}%, 80% 구간 {lo:+.2f}% ~ {hi:+.2f}%">
 <text x="14" y="20" fill="var(--down)" font-size="11" letter-spacing=".08em">◀ 갭하락</text>
 <text x="{W-14}" y="20" fill="var(--up)" font-size="11" text-anchor="end" letter-spacing=".08em">갭상승 ▶</text>
-<line x1="20" y1="74" x2="{W-20}" y2="74" stroke="var(--line)" stroke-width="1"/>
-{ticks}
-<rect x="{min(bx0,bx1)}" y="40" width="{abs(bx1-bx0)}" height="30" rx="2"
-      fill="{col}" opacity="0.16"/>
-<line x1="{bx0}" y1="38" x2="{bx0}" y2="72" stroke="{col}" stroke-width="1.5" opacity=".55"/>
-<line x1="{bx1}" y1="38" x2="{bx1}" y2="72" stroke="{col}" stroke-width="1.5" opacity=".55"/>
+<line x1="20" y1="74" x2="{W-20}" y2="74" stroke="var(--line)" stroke-width="1"/>{ticks}
+<rect x="{min(b0,b1)}" y="40" width="{abs(b1-b0)}" height="30" rx="2" fill="{col}" opacity="0.16"/>
+<line x1="{b0}" y1="38" x2="{b0}" y2="72" stroke="{col}" stroke-width="1.5" opacity=".55"/>
+<line x1="{b1}" y1="38" x2="{b1}" y2="72" stroke="{col}" stroke-width="1.5" opacity=".55"/>
 <line x1="{W/2}" y1="30" x2="{W/2}" y2="82" stroke="var(--text)" stroke-width="1.5" opacity=".9"/>
 <text x="{W/2}" y="118" fill="var(--dim)" font-size="11" text-anchor="middle" class="mono">0</text>
 <circle cx="{px(gap)}" cy="55" r="6.5" fill="{col}"/>
@@ -105,168 +101,39 @@ def ruler(gap, lo, hi):
 </svg>'''
 
 
-# ═══════════ 5. 자기채점 ═══════════
-kr["gap"] = (kr["kospi_open"] / kr["kospi_close"].shift(1) - 1) * 100
-recent = kr.dropna(subset=["gap"]).tail(8)[["date", "gap"]]
-
-# ═══════════ 6. HTML ═══════════
-CSS = """
-@import url('https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css');
-@import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;800&display=swap');
-
-:root{
-  --bg:#0B1120; --surf:#131B2E; --surf2:#1A2438; --line:#263149;
-  --text:#E6EBF4; --dim:#8A96AC; --faint:#5A6780;
-  --up:#FF5F56; --down:#46A2FF; --warn:#FFB84D; --good:#3DD68C;
-  --mono:'JetBrains Mono',ui-monospace,monospace;
-}
-*{box-sizing:border-box;margin:0;padding:0}
-html{-webkit-text-size-adjust:100%}
-body{
-  font-family:Pretendard,-apple-system,'Malgun Gothic',sans-serif;
-  background:var(--bg); color:var(--text);
-  font-size:15px; line-height:1.65; padding:0 14px 40px;
-  font-feature-settings:"tnum";
-}
-.mono{font-family:var(--mono);font-feature-settings:"tnum"}
-.w{max-width:660px;margin:0 auto}
-
-header{padding:26px 0 14px;border-bottom:1px solid var(--line)}
-.brand{font-size:1.35rem;font-weight:800;letter-spacing:-.03em}
-.brand span{color:var(--faint);font-weight:500}
-.tag{color:var(--dim);font-size:.84rem;margin-top:4px}
-nav{display:flex;gap:18px;margin-top:14px;flex-wrap:wrap}
-nav a{color:var(--dim);text-decoration:none;font-size:.86rem;
-  padding-bottom:4px;border-bottom:2px solid transparent}
-nav a:hover,nav a.on{color:var(--text);border-color:var(--text)}
-
-section{background:var(--surf);border:1px solid var(--line);
-  border-radius:10px;padding:20px;margin:16px 0}
-.eyebrow{font-size:.72rem;letter-spacing:.14em;text-transform:uppercase;
-  color:var(--faint);font-weight:600;margin-bottom:14px}
-h2{font-size:1rem;font-weight:700;margin-bottom:14px;letter-spacing:-.01em}
-
-/* HERO */
-.hero{background:linear-gradient(170deg,#141E36 0%,#0F1728 100%);
-  border-color:#2C3A58;padding:22px 20px 16px}
-.hero .num{font-family:var(--mono);font-size:3.4rem;font-weight:800;
-  letter-spacing:-.04em;line-height:1;margin:4px 0 10px}
-.hero .band{font-family:var(--mono);font-size:1rem;color:var(--dim)}
-.hero .band b{color:var(--text);font-weight:600}
-.ruler{width:100%;height:auto;margin:16px 0 6px;display:block}
-.zero-warn{background:rgba(255,184,77,.09);border:1px solid rgba(255,184,77,.3);
-  border-radius:7px;padding:11px 13px;margin-top:10px;
-  font-size:.85rem;color:var(--warn);line-height:1.55}
-.stat{display:flex;gap:20px;margin-top:14px;padding-top:14px;
-  border-top:1px solid var(--line);flex-wrap:wrap}
-.stat div{font-size:.78rem;color:var(--faint)}
-.stat b{display:block;font-family:var(--mono);font-size:.98rem;
-  color:var(--text);font-weight:600;margin-top:2px}
-
-.up{color:var(--up)} .dn{color:var(--down)}
-
-/* 지표 행 + 기여도 바 */
-.ind{padding:12px 0;border-bottom:1px solid var(--line)}
-.ind:last-child{border:0;padding-bottom:0}
-.ind-top{display:flex;justify-content:space-between;align-items:baseline;gap:10px}
-.ind-nm{font-weight:600;font-size:.92rem}
-.ind-nm em{display:block;font-style:normal;font-size:.74rem;
-  color:var(--faint);font-weight:400;margin-top:1px}
-.ind-v{font-family:var(--mono);font-size:.95rem;font-weight:600;text-align:right;white-space:nowrap}
-.ind-v em{display:block;font-style:normal;font-size:.74rem;color:var(--faint);font-weight:400}
-.bar{height:5px;background:var(--surf2);border-radius:3px;margin-top:9px;
-  position:relative;overflow:hidden}
-.bar i{position:absolute;top:0;height:100%;border-radius:3px}
-.bar .mid{position:absolute;left:50%;top:-2px;width:1px;height:9px;background:var(--faint)}
-.bar-lb{display:flex;justify-content:space-between;font-size:.7rem;
-  color:var(--faint);margin-top:4px;font-family:var(--mono)}
-
-table{width:100%;border-collapse:collapse;font-size:.85rem}
-th,td{padding:9px 4px;text-align:right;border-bottom:1px solid var(--line)}
-th{color:var(--faint);font-weight:600;font-size:.74rem;
-  letter-spacing:.05em;text-transform:uppercase}
-td{font-family:var(--mono)}
-td:first-child,th:first-child{text-align:left;font-family:Pretendard,sans-serif}
-tbody tr:last-child td{border:0}
-.now{display:inline-block;padding:1px 7px;border-radius:4px;
-  background:var(--text);color:var(--bg);font-size:.68rem;
-  font-weight:700;margin-left:5px;vertical-align:middle}
-
-.limit{background:transparent;border-style:dashed;border-color:#3A2E1E}
-.limit .eyebrow{color:var(--warn)}
-.limit li{list-style:none;padding:11px 0;border-bottom:1px solid #24304A;
-  font-size:.88rem;line-height:1.6;color:var(--dim)}
-.limit li:last-child{border:0;padding-bottom:0}
-.limit b{color:var(--text);font-weight:600}
-.limit .r2{font-family:var(--mono);color:var(--warn);font-size:.82rem}
-
-details{border-bottom:1px solid var(--line)}
-details:last-child{border:0}
-summary{cursor:pointer;padding:12px 0;font-weight:600;font-size:.9rem;
-  list-style:none;display:flex;justify-content:space-between}
-summary::after{content:'+';color:var(--faint);font-family:var(--mono)}
-details[open] summary::after{content:'−'}
-details p{font-size:.87rem;color:var(--dim);padding:0 0 13px;line-height:1.7}
-
-.kv{display:flex;justify-content:space-between;padding:9px 0;
-  border-bottom:1px solid var(--line);font-size:.88rem}
-.kv:last-child{border:0}
-.kv span{color:var(--dim)}
-.kv b{font-family:var(--mono);font-weight:600}
-.no{color:var(--up)} .yes{color:var(--good)}
-
-.stamp{font-size:.74rem;color:var(--faint);margin-top:12px;font-family:var(--mono)}
-footer{color:var(--faint);font-size:.76rem;padding:30px 0 10px;
-  line-height:1.9;border-top:1px solid var(--line);margin-top:26px}
-footer a{color:var(--dim)}
-@media(max-width:420px){
-  .hero .num{font-size:2.7rem}
-  section{padding:17px 15px}
-}
-@media(prefers-reduced-motion:no-preference){
-  section{animation:up .5s cubic-bezier(.2,.7,.3,1) backwards}
-  section:nth-child(2){animation-delay:.05s}
-  section:nth-child(3){animation-delay:.1s}
-  @keyframes up{from{opacity:0;transform:translateY(10px)}}
-}
-"""
-
-
-def page(title, desc, body, path, nav_on=""):
-    nav = "".join(
-        f'<a href="{u}" class="{"on" if u == nav_on else ""}">{t}</a>'
-        for u, t in [("/", "대시보드"), ("/guide.html", "야간선물 제도"),
-                     ("/methodology.html", "방법론과 한계")])
-    (SITE / path).write_text(f'''<!DOCTYPE html><html lang="ko"><head>
-<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>{title}</title><meta name="description" content="{desc}">
-<link rel="canonical" href="{BASE}/{path}">
-<meta property="og:title" content="{title}"><meta property="og:description" content="{desc}">
-<meta property="og:type" content="website"><meta property="og:url" content="{BASE}/{path}">
-<meta name="theme-color" content="#0B1120">
-<meta name="robots" content="index,follow,max-snippet:-1,max-image-preview:large">
-<style>{CSS}</style></head><body><div class="w">
-<header><div class="brand">nightgap<span>.co.kr</span></div>
-<div class="tag">간밤 해외 지표로 오늘 코스피 개장 갭을 환산합니다</div>
-<nav>{nav}</nav></header>
-{body}
-<footer>
-데이터 · 한국거래소 KRX Open API, Yahoo Finance<br>
-이 사이트는 과거 데이터의 통계적 관계만 계산합니다. 투자 조언이나 매매 권유가 아니며,
-투자 판단의 근거로 사용될 수 없습니다.<br>
-갱신 {KST:%Y-%m-%d %H:%M} KST
-</footer></div></body></html>''', encoding="utf-8")
-
-
 # ── HERO ──
+LEAD = (f'<div class="lead"><b>개장 갭</b>은 오늘 아침 코스피가 어제 종가보다 '
+        f'얼마나 높게(또는 낮게) 시작하는지를 말합니다.<br>'
+        f'아래 숫자는 <b>간밤 미국 시장 지표</b>로 환산한 값입니다. '
+        f'예측이 아니라, 이미 형성된 가격을 코스피 단위로 옮긴 것에 가깝습니다.</div>')
+
 if ok and not warn:
-    zw = ('<div class="zero-warn">예상 구간이 0을 가로지릅니다. '
-          '상승·하락 <b>방향조차 확정할 수 없습니다.</b></div>') if crosses_zero else ""
+    op = last_close * (1 + gap / 100)
+    op_lo = last_close * (1 + lo / 100)
+    op_hi = last_close * (1 + hi / 100)
+    zw = ('<div class="zero-warn">예상 구간이 <b>0을 가로지릅니다.</b> '
+          '상승·하락 방향조차 확정할 수 없습니다.</div>') if crosses else ""
     hero = f'''<section class="hero">
 <div class="eyebrow">오늘 코스피 개장 갭 · 환산</div>
+{LEAD}
 <div class="num mono {'up' if gap>=0 else 'dn'}">{gap:+.2f}%</div>
 <div class="band">80% 구간 &nbsp;<b>{lo:+.2f}% ~ {hi:+.2f}%</b></div>
+
+<div class="pts">
+<div>어제 코스피 종가<b>{last_close:,.2f}</b><em>{last_date:%m월 %d일}</em></div>
+<div>환산 예상 시가<b class="{'up' if gap>=0 else 'dn'}">{op:,.0f}</b>
+<em>{op_lo:,.0f} ~ {op_hi:,.0f}</em></div>
+</div>
+
 {ruler(gap, lo, hi)}{zw}
+
+<div class="howto"><div class="t">읽는 법</div><ul>
+<li><b>{gap:+.2f}%</b> — 어제 종가보다 약 {abs(gap):.1f}% {'높게' if gap>=0 else '낮게'} 시작할 것으로 환산됩니다</li>
+<li><b>80% 구간</b> — 과거 사례 10번 중 약 8번은 이 범위 안에서 열렸습니다</li>
+<li><b>구간이 0을 가로지르면</b> — 상승·하락 방향조차 확정할 수 없다는 뜻입니다</li>
+<li><b>장중 흐름</b> — 개장 이후는 예측하지 않습니다 (R² 0.02, 무관)</li>
+</ul></div>
+
 <div class="stat">
 <div>국면<b>{regime}</b></div>
 <div>설명력 R²<b>{R['gap_r2']:.2f}</b></div>
@@ -276,15 +143,17 @@ if ok and not warn:
 elif ok and warn:
     hero = f'''<section class="hero">
 <div class="eyebrow" style="color:var(--warn)">환산 보류</div>
-<div class="num mono" style="font-size:1.5rem;color:var(--warn);line-height:1.4">
+{LEAD}
+<div class="num mono" style="font-size:1.4rem;color:var(--warn);line-height:1.4">
 숫자를 제시하지 않습니다</div>
-<p style="color:var(--dim);font-size:.9rem;margin-top:8px">{warn}.
-모델은 과거 관측 범위 안에서만 신뢰할 수 있습니다.</p>
-<div class="stat"><div>참고 계산값 (신뢰 불가)
-<b style="color:var(--faint)">{gap:+.2f}%</b></div>
+<p style="color:var(--dim);font-size:.9rem;margin-top:10px">{warn}.
+모델은 과거 관측 범위 안에서만 신뢰할 수 있습니다. 범위를 벗어난 구간에서는
+예측값을 내지 않는 것이 정직한 대응이라고 판단했습니다.</p>
+<div class="stat"><div>참고 계산값 (신뢰 불가)<b style="color:var(--faint)">{gap:+.2f}%</b></div>
 <div>국면<b>{regime}</b></div></div></section>'''
 else:
-    hero = '''<section class="hero"><div class="eyebrow" style="color:var(--warn)">데이터 수집 실패</div>
+    hero = f'''<section class="hero">
+<div class="eyebrow" style="color:var(--warn)">데이터 수집 실패</div>{LEAD}
 <div class="num mono" style="font-size:1.4rem;color:var(--warn)">환산 불가</div>
 <p style="color:var(--dim);font-size:.9rem;margin-top:8px">
 일부 지표를 가져오지 못했습니다. 부정확한 값을 제시하지 않습니다.</p></section>'''
@@ -304,16 +173,18 @@ for f, v, c in contrib:
 <div class="bar-lb"><span>갭 기여도</span><span class="{cls}">{c:+.2f}%p</span></div></div>'''
 
 at = max((live[f]["at"] for f in live), default=KST)
-
 reg_rows = "".join(
     f'<tr><td>{k}{"<span class=now>현재</span>" if k == regime else ""}</td>'
-    f'<td>{v["n"]}</td><td>{v["gap_r2"]:.2f}</td>'
-    f'<td>±{1.28*v["gap_se"]:.2f}%p</td></tr>'
+    f'<td>{v["n"]}</td><td>{v["gap_r2"]:.2f}</td><td>±{1.28*v["gap_se"]:.2f}%p</td></tr>'
     for k, v in M["regimes"].items())
 
 BODY = f'''{hero}
 
 <section><div class="eyebrow">근거 · 간밤 해외 지표</div>
+<h2>이 숫자들이 위의 갭을 만들었습니다</h2>
+<p style="color:var(--dim);font-size:.88rem;margin-bottom:6px">
+각 지표가 갭에 얼마나 기여했는지 분해했습니다. 막대가 오른쪽이면 갭을 위로,
+왼쪽이면 아래로 밀었다는 뜻입니다.</p>
 {inds}
 <div class="stamp">미국장 마감 기준 · {at:%m월 %d일 %H:%M} KST</div></section>
 
@@ -323,7 +194,8 @@ BODY = f'''{hero}
 <tbody>{reg_rows}</tbody></table>
 <p style="color:var(--dim);font-size:.84rem;margin-top:12px">
 변동성이 큰 시기에는 같은 모델이라도 오차가 4배 가까이 커집니다.
-그래서 하나의 오차범위를 쓰지 않고, 매일 국면을 판정해 다르게 적용합니다.</p></section>
+하나의 오차범위를 고정하면 어느 한쪽에서는 반드시 거짓말이 됩니다.
+그래서 매일 국면을 판정해 다르게 적용합니다.</p></section>
 
 <section><div class="eyebrow">과거 사례 · 코스피 종가</div>
 <h2>야간선물이 이만큼 움직였던 날</h2>
@@ -342,37 +214,44 @@ BODY = f'''{hero}
 <li><b>장중 흐름을 예측하지 않습니다.</b> 간밤 지표로 장중 등락을 설명하려 했으나 실패했습니다.
 <span class="r2">R² 0.016</span> — 사실상 무관합니다.</li>
 <li><b>종가를 숫자로 제시하지 않습니다.</b> 설명력이 <span class="r2">R² 0.19</span>에 그칩니다.
-이 정도로 숫자를 내놓으면 오히려 오해를 만듭니다. 대신 과거 사례를 보여드립니다.</li>
+이 정도로 숫자를 내놓으면 오히려 오해를 만듭니다.</li>
 <li><b>매매 조언을 하지 않습니다.</b> 간밤 등락은 개장 시점에 이미 가격에 반영됩니다.
 아침에 이 값을 보고 매매해서 얻을 수 있는 것은 없습니다.</li>
 <li><b>모르는 구간에서는 침묵합니다.</b> 지표가 과거 관측 범위를 벗어나면 숫자를 내지 않습니다.</li>
 </ul></section>
 
 <section><div class="eyebrow">자주 묻는 질문</div>
+<details><summary>개장 갭이 정확히 무엇인가요</summary>
+<p>오늘 코스피 시가를 어제 종가로 나눈 값입니다. 어제 7,400으로 끝났는데 오늘 7,474로 시작하면
+갭은 +1%입니다. 한국 정규장이 닫힌 밤사이 나온 정보가 아침에 한꺼번에 반영되면서 생깁니다.</p></details>
+<details><summary>이 숫자를 믿어도 되나요</summary>
+<p>저희는 매일 예측과 실제를 대조해 공개합니다.
+<a href="/accuracy/" style="color:var(--down)">적중 기록</a>에서 확인하실 수 있습니다.
+80% 구간이라고 말한 범위의 실제 적중률은 80.2%였습니다.</p></details>
 <details><summary>야간선물이 오르면 코스피도 오르나요</summary>
-<p>개장 갭은 상당 부분 따라갑니다. 다만 이건 예측이 아니라 <b>이미 형성된 가격의 환산</b>에 가깝습니다.
-밤사이 미국 시장에서 한국 자산이 재평가되고, 그 결과가 아침 개장가에 반영되는 것입니다.</p></details>
+<p>개장 갭은 상당 부분 따라갑니다. 다만 이건 예측이 아니라 이미 형성된 가격의 환산에 가깝습니다.
+개장 이후의 흐름은 별개이며, 저희는 예측하지 않습니다.</p></details>
 <details><summary>그럼 아침에 사면 수익이 나나요</summary>
 <p>아닙니다. 간밤 등락은 개장가에 거의 전부 반영되어 있습니다.
-개장 이후의 흐름은 간밤 지표와 통계적으로 무관했습니다.</p></details>
+시가가 이미 그만큼 올라서 시작하므로, 그 가격에 사는 것으로는 아무것도 얻지 못합니다.</p></details>
 <details><summary>야간선물 거래시간은 언제인가요</summary>
 <p>KRX 야간 파생상품시장은 18:00부터 익일 06:00까지 12시간 운영되며, 호가 접수는 17:50부터입니다.
 야간거래는 T+1일 거래로 처리되어 익일 정규거래와 같은 거래일로 집계됩니다.</p></details>
 <details><summary>왜 야간선물이 아니라 미국 지표를 쓰나요</summary>
-<p>KRX 공식 야간선물 데이터는 익일 08시에 공개됩니다. 개장 전 시점에 확보할 수 있는 것은
-미국 시장 데이터뿐입니다. 정확도는 야간선물 기준 모델의 약 60% 수준이며,
-그만큼 오차범위를 넓게 잡습니다.</p></details>
+<p>KRX 공식 야간선물 데이터는 익일 08시에 공개됩니다. 개장 전에는 구할 수 없습니다.
+그 시각에 확보 가능한 것은 미국 시장 데이터뿐이며, 정확도는 야간선물 기준 모델의
+약 60% 수준입니다. 그만큼 오차범위를 넓게 잡습니다.</p></details>
 </section>'''
 
-page("야간 갭 | 간밤 해외지표로 보는 오늘 코스피 개장 갭",
-     f"간밤 미국 지표로 오늘 코스피 개장 갭을 환산합니다. KRX 공식 데이터 {M['n']}거래일 회귀분석. "
-     f"국면별 오차범위와 모델의 한계를 함께 공개합니다.",
-     BODY, "index.html", "/")
+shell("야간 갭 | 간밤 해외지표로 보는 오늘 코스피 개장 갭",
+      f"간밤 미국 지표로 오늘 코스피 개장 갭을 환산합니다. KRX 공식 데이터 {M['n']}거래일 회귀분석. "
+      f"국면별 오차범위와 모델의 한계를 함께 공개합니다.",
+      BODY, "index.html", SITE, nav_on="/")
 
 # ── 제도 ──
-page("코스피200 야간선물 제도 정리 (2026년 기준)",
-     "2025년 6월 9일 KRX 자체 야간 파생상품시장 전환 이후 기준. 거래시간 18:00~06:00, T+1 거래일 처리.",
-     '''<section><div class="eyebrow">먼저 알아야 할 것</div>
+shell("코스피200 야간선물 제도 정리 (2026년 기준)",
+      "2025년 6월 9일 KRX 자체 야간 파생상품시장 전환 이후 기준. 거래시간 18:00~06:00, T+1 거래일 처리.",
+      '''<section><div class="eyebrow">먼저 알아야 할 것</div>
 <h2>제도가 바뀌었습니다</h2>
 <p style="color:var(--dim);font-size:.9rem;margin-bottom:14px">
 코스피200 야간선물을 검색하면 설명이 제각각입니다. 제도가 여러 번 바뀌었기 때문입니다.
@@ -406,12 +285,12 @@ page("코스피200 야간선물 제도 정리 (2026년 기준)",
 <p style="color:var(--dim);font-size:.9rem;margin-top:10px">
 그래서 야간에 형성된 가격은 다음 날 개장가에 <b style="color:var(--text)">갭(Gap)</b> 형태로 나타납니다.
 <a href="/" style="color:var(--down)">대시보드</a>는 이 관계를 수치화한 것입니다.</p></section>''',
-     "guide.html", "/guide.html")
+      "guide.html", SITE, nav_on="/guide.html")
 
 # ── 방법론 ──
-page("방법론과 한계 | nightgap.co.kr",
-     "회귀 모델, 국면별 예측구간 산출 방법, 검증 후 기각한 가설, 그리고 이 모델의 한계를 공개합니다.",
-     f'''<section><div class="eyebrow">데이터</div>
+shell("방법론과 한계 | nightgap.co.kr",
+      "회귀 모델, 국면별 예측구간 산출 방법, 검증 후 기각한 가설, 그리고 이 모델의 한계를 공개합니다.",
+      f'''<section><div class="eyebrow">데이터</div>
 <div class="kv"><span>출처</span><b>KRX 공식 Open API</b></div>
 <div class="kv"><span>기간</span><b>{M['start']} ~ {M['end']}</b></div>
 <div class="kv"><span>표본</span><b>{M['n']}거래일</b></div>
@@ -440,7 +319,7 @@ page("방법론과 한계 | nightgap.co.kr",
 <div class="kv"><span>야간 → 개장 갭 환산</span><b class="yes">채택</b></div>
 <p style="color:var(--dim);font-size:.88rem;margin-top:14px">
 기각한 가설을 숨기지 않는 이유는, 그것이 남은 하나의 신뢰성을 뒷받침하기 때문입니다.
-모든 가설이 통과했다면 검증을 의심해야 합니다.</p></section>
+모든 가설이 통과했다면 검증 자체를 의심해야 합니다.</p></section>
 
 <section class="limit"><div class="eyebrow">한계</div>
 <ul>
@@ -450,7 +329,7 @@ page("방법론과 한계 | nightgap.co.kr",
 <li>과거 관측 범위를 벗어난 급변 상황에서는 <b>환산값을 제시하지 않습니다.</b></li>
 <li>제도나 시장 구조가 바뀌면 계수는 달라질 수 있습니다.</li>
 </ul></section>''',
-     "methodology.html", "/methodology.html")
+      "methodology.html", SITE, nav_on="/methodology.html")
 
 # ── robots / sitemap ──
 (SITE / "robots.txt").write_text(
@@ -469,7 +348,9 @@ today = KST.strftime("%Y-%m-%d")
 print("\n" + "=" * 60)
 print(f"  빌드 완료")
 print(f"    국면      {regime} (rv20={rv:.2f})")
-print(f"    환산 갭   {gap:+.2f}%  [{lo:+.2f} ~ {hi:+.2f}]" if ok else "    환산      보류")
-print(f"    0 가로지름 {'예 — 방향 불확정' if crosses_zero else '아니오'}")
+if ok:
+    print(f"    환산 갭   {gap:+.2f}%  [{lo:+.2f} ~ {hi:+.2f}]")
+    print(f"    예상 시가 {last_close*(1+gap/100):,.0f}  (어제 {last_close:,.2f})")
+print(f"    0 가로지름 {'예 — 방향 불확정' if crosses else '아니오'}")
 print(f"    경고      {warn or '없음'}")
 print("=" * 60)
