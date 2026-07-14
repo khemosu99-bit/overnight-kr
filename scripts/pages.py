@@ -13,7 +13,7 @@ import pandas as pd
 
 ROOT = pathlib.Path(__file__).resolve().parent.parent
 SITE = ROOT / "site"
-BASE = "https://nightgap.kr"
+BASE = "https://nightgap.co.kr"
 KST = datetime.datetime.utcnow() + datetime.timedelta(hours=9)
 
 M = json.loads((ROOT / "data" / "model2.json").read_text(encoding="utf-8"))
