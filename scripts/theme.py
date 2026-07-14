@@ -17,6 +17,10 @@ NAV = [("/", "대시보드"), ("/accuracy/", "적중 기록"), ("/archive/", "�
 NAVER_VERIFY = "9aa25a72930ab51e58eec15b20c021da79c9faef"
 GOOGLE_VERIFY = ""
 
+# ── 방문자 분석 (GoatCounter) ──────────────────────
+# goatcounter.com 가입 후 정한 Code 를 넣으세요. 예: "nightgap"
+GOATCOUNTER = "nightgap"
+
 _verify = ""
 if NAVER_VERIFY:
     _verify += f'<meta name="naver-site-verification" content="{NAVER_VERIFY}">'
@@ -25,7 +29,7 @@ if GOOGLE_VERIFY:
 
 _analytics = ""
 if GOATCOUNTER:
-    _analytics = (f'<script data-goatcounter="https://nightgap.goatcounter.com/count"'
+    _analytics = (f'<script data-goatcounter="https://{GOATCOUNTER}.goatcounter.com/count"'
                   f' async src="//gc.zgo.at/count.js"></script>')
 
 CSS = """
