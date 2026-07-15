@@ -160,6 +160,11 @@ color:var(--faint);font-weight:400;margin-top:2px}
 .nlive-v{margin-top:8px;font-size:1.05rem;font-weight:700}
 .nlive-v em{display:block;font-style:normal;font-size:.8rem;
 font-weight:600;margin-top:2px}
+.wk-strip{display:flex;gap:8px;margin:4px 0}
+.wk-day{flex:1;text-align:center;background:rgba(255,255,255,.03);
+border:1px solid var(--line);border-radius:8px;padding:12px 4px}
+.wk-wd{font-size:.78rem;color:var(--faint);font-weight:600;margin-bottom:6px}
+.wk-gap{font-family:var(--mono);font-size:.92rem;font-weight:700}
 @media(max-width:420px){.nlive-wrap{grid-template-columns:1fr 1fr;gap:8px}
 .nlive{padding:11px 12px}.nflow-v{font-size:1.7rem}}
 @media(max-width:420px){.hero .num{font-size:2.6rem}section{padding:17px 15px}
