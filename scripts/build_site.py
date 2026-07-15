@@ -257,6 +257,28 @@ if ok and not warn and session == "pre":
 
 today_mkt = kospi_today() if session in ("live", "post") else None
 
+# ── 이번 주 성적 (accuracy 데이터 재사용) ──
+def week_record():
+    """이번 주 월~오늘의 예측 적중 현황을 계산한다."""
+    try:
+        kr2 = pd.read_csv(ROOT / "data" / "kr_index.csv", parse_dates=["date"]).sort_values("date")
+        kr2["gap"] = (kr2["kospi_open"] / kr2["kospi_close"].shift(1) - 1) * 100
+        # 이번 주 월요일
+        monday = KST.date() - datetime.timedelta(days=KST.weekday())
+        wk = kr2[kr2["date"].dt.date >= monday].dropna(subset=["gap"])
+        days = []
+        for _, r in wk.iterrows():
+            days.append({"date": r["date"].date(),
+                         "wd": "월화수목금"[r["date"].weekday()],
+                         "gap": r["gap"]})
+        return days
+    except Exception as e:
+        print(f"  week_record 실패: {e}")
+        return []
+
+
+week = week_record() if session in ("live", "post") else []
+
 
 def ruler_html():
     return ruler(gap, lo, hi) if (ok and gap is not None) else ""
@@ -459,28 +481,80 @@ elif session == "night":
 </section>'''
 
 elif session == "post":
-    # ⚪ 마감 후 · 야간
+    # ⚪ 마감 후 · 오늘의 마감 리포트
     fc_ok = forecast and forecast.get("date") == today_str
-    summary = ""
-    if fc_ok and today_mkt and today_mkt.get("open"):
-        rg = (today_mkt["open"] / forecast["base_close"] - 1) * 100
-        in_band = forecast["lo"] <= rg <= forecast["hi"]
-        summary = f'''<div class="pts">
-<div>오늘 아침 예상<b class="{'up' if forecast["gap"] >= 0 else 'dn'}">{forecast["gap"]:+.2f}%</b><em>새벽 {forecast["saved_at"]}</em></div>
-<div>실제 개장 갭<b class="{'up' if rg >= 0 else 'dn'}">{rg:+.2f}%</b>
-<em class="{'yes' if in_band else 'no'}">{'적중' if in_band else '벗어남'}</em></div>
+    real_gap = None
+    if today_mkt and today_mkt.get("open") and fc_ok:
+        real_gap = (today_mkt["open"] / forecast["base_close"] - 1) * 100
+
+    # 오늘 코스피 하루 흐름 (시가→현재/종가)
+    today_close = today_mkt.get("price") if today_mkt else None
+    today_open = today_mkt.get("open") if today_mkt else None
+    intra = ((today_close / today_open - 1) * 100
+             if (today_close and today_open) else None)
+
+    # 오늘 성적 배지
+    result_html = ""
+    if fc_ok and real_gap is not None:
+        fg = forecast["gap"]
+        in_band = forecast["lo"] <= real_gap <= forecast["hi"]
+        dir_ok = (fg >= 0) == (real_gap >= 0)
+        err = abs(real_gap - fg)
+        result_html = f'''<div class="pts">
+<div>아침 예상<b class="{'up' if fg >= 0 else 'dn'}">{fg:+.2f}%</b>
+<em>새벽 {forecast["saved_at"]}</em></div>
+<div>실제 개장<b class="{'up' if real_gap >= 0 else 'dn'}">{real_gap:+.2f}%</b>
+<em>시가 {today_open:,.0f}</em></div>
+</div>
+<div class="zero-warn" style="color:var(--{'good' if in_band else 'up'});
+ background:rgba({'61,214,140' if in_band else '255,95,86'},.08);
+ border-color:rgba({'61,214,140' if in_band else '255,95,86'},.3)">
+오늘 예상 <b>{'적중' if in_band else '벗어남'}</b> · 방향 {'일치' if dir_ok else '불일치'}
+· 오차 {err:.2f}%p</div>'''
+
+    # 오늘 하루 코스피 흐름
+    intra_html = ""
+    if today_open and today_close is not None and intra is not None:
+        icls = "up" if intra >= 0 else "dn"
+        intra_html = f'''<div class="pts" style="margin-top:12px">
+<div>오늘 시가<b>{today_open:,.2f}</b></div>
+<div>종가<b>{today_close:,.2f}</b></div>
+<div>장중 등락<b class="{icls}">{intra:+.2f}%</b><em>시가→종가</em></div>
 </div>'''
+
+    # 이번 주 성적 스트립
+    week_html = ""
+    if week:
+        cells = ""
+        for d in week:
+            g = d["gap"]
+            cls = "up" if g >= 0 else "dn"
+            cells += f'''<div class="wk-day">
+<div class="wk-wd">{d["wd"]}</div>
+<div class="wk-gap {cls}">{g:+.1f}%</div></div>'''
+        avg = sum(d["gap"] for d in week) / len(week)
+        week_html = f'''<section><div class="eyebrow">이번 주 개장 갭</div>
+<h2>월요일부터 오늘까지</h2>
+<div class="wk-strip">{cells}</div>
+<p style="color:var(--dim);font-size:.86rem;margin-top:12px">
+이번 주 {len(week)}거래일 평균 개장 갭 <b style="color:var(--text)">{avg:+.2f}%</b>.
+각 날짜의 예측 적중 여부는
+<a href="/accuracy/" style="color:var(--down)">적중 기록</a>에서 확인하실 수 있습니다.</p></section>'''
+
     hero = f'''<section class="hero">
-<div class="eyebrow">⚪ 장 마감 · 다음 거래일 대기</div>
-<div class="lead" style="border:0;padding:0">
+<div class="eyebrow">⚪ 장 마감 · 오늘의 기록</div>
+<div class="lead" style="border:0;padding:0;margin-bottom:{'16px' if result_html else '0'}">
 한국 증시가 마감되었습니다. 오늘의 개장 갭 예상은 종료되었고,
 <b>다음 거래일 개장 갭 예상은 새벽 6시</b>에 갱신됩니다.</div>
-{summary}
-<div class="howto" style="border-top:0;margin-top:14px"><div class="t">지금 볼 것</div><ul>
+{result_html}
+{intra_html}
+<div class="howto" style="margin-top:16px"><div class="t">지금 볼 것</div><ul>
 <li><a href="/accuracy/" style="color:var(--down)">예측 적중 기록</a> — 80% 구간 적중률 80.2%</li>
-<li><a href="/archive/" style="color:var(--down)">월별 갭 아카이브</a></li>
-<li><a href="/methodology.html" style="color:var(--down)">방법론과 한계</a></li>
-</ul></div></section>'''
+<li><a href="/archive/" style="color:var(--down)">월별 갭 아카이브</a> — 과거 개장 갭 전체</li>
+<li>다음 야간 라이브는 <b>밤 11시</b>부터 (미국장 개장)</li>
+</ul></div></section>
+
+{week_html}'''
 
 elif ok and warn:
     hero = f'''<section class="hero">
