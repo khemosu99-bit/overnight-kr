@@ -39,47 +39,50 @@ def quote(sym):
 
 
 def kospi_latest():
-    """최신 코스피 종가.
+    """직전 '확정' 종가와 그 날짜를 반환한다.
 
-    ⚠️ Yahoo 차트 API의 indicators.quote[].close 배열은 한국 지수의
-       전일 값을 늦게 채운다 (Open/High/Low가 0.00으로 남고 날짜가 빠짐).
-       반면 같은 응답의 meta.regularMarketPrice 는 마감 직후 즉시 갱신된다.
-       야후 웹 화면이 보여주는 값이 바로 이 meta 값이다.
+    ⚠️ 핵심: 장중(marketState=REGULAR)에는 meta.regularMarketPrice 가
+       '현재가'라서 종가가 아니다. 이걸 종가로 쓰면 오늘 장중값을 기준으로
+       갭을 계산하는 치명적 오류가 난다.
 
-    3단계로 시도하고, 어느 경로가 쓰였는지 로그에 남긴다.
-    ※ 시가(Open)는 Yahoo에서 절대 쓰지 않는다. KRX 공식만 사용한다.
+       - 장 마감/장후(CLOSED/POST/PRE)  → meta 값이 '확정 종가' → 사용
+       - 장중(REGULAR)                  → meta 무시, close[] 배열의
+                                          마지막 '완료된' 거래일 종가 사용
     """
-    # ① 차트 API의 meta 블록  (가장 신뢰. 인증 불필요)
-    try:
-        r = requests.get("https://query1.finance.yahoo.com/v8/finance/chart/^KS11",
-                         params={"interval": "1d", "range": "5d"},
-                         headers=UA, timeout=20)
-        meta = r.json()["chart"]["result"][0]["meta"]
-        px, ts = meta.get("regularMarketPrice"), meta.get("regularMarketTime")
-        if px and ts:
-            d = (datetime.datetime.utcfromtimestamp(ts)
-                 + datetime.timedelta(hours=9))
-            print(f"    [소스] chart/meta  →  {d:%Y-%m-%d %H:%M} KST  {px:,.2f}")
-            return d.date(), float(px)
-        print("    [소스] chart/meta 실패: regularMarketPrice 없음")
-    except Exception as e:
-        print(f"    [소스] chart/meta 실패: {str(e)[:60]}")
+    r = requests.get("https://query1.finance.yahoo.com/v8/finance/chart/^KS11",
+                     params={"interval": "1d", "range": "1mo"},
+                     headers=UA, timeout=20)
+    res = r.json()["chart"]["result"][0]
+    meta = res.get("meta", {})
+    state = meta.get("marketState", "")
 
-    # ② 차트 API의 close 배열  (하루 늦을 수 있음)
-    try:
-        r = requests.get("https://query1.finance.yahoo.com/v8/finance/chart/^KS11",
-                         params={"interval": "1d", "range": "1mo"},
-                         headers=UA, timeout=20)
-        res = r.json()["chart"]["result"][0]
-        rows = [((datetime.datetime.utcfromtimestamp(t)
-                  + datetime.timedelta(hours=9)).date(), c)
-                for t, c in zip(res["timestamp"],
-                                res["indicators"]["quote"][0]["close"]) if c]
-        if rows:
-            print(f"    [소스] chart/close 배열  →  {rows[-1][0]}  {rows[-1][1]:,.2f}")
-            return rows[-1]
-    except Exception as e:
-        print(f"    [소스] chart/close 실패: {str(e)[:60]}")
+    # close[] 배열에서 '값이 있는' 거래일만 추린다 (오늘 장중분은 Open=0이라 대개 빠짐)
+    ts = res.get("timestamp", [])
+    cl = res["indicators"]["quote"][0]["close"]
+    rows = [((datetime.datetime.utcfromtimestamp(t) + datetime.timedelta(hours=9)).date(), c)
+            for t, c in zip(ts, cl) if c]
+
+    today = KST.date()
+
+    # ① 장이 닫혀 있으면 meta 가 확정 종가
+    if state in ("CLOSED", "POST", "PRE", "POSTPOST", "PREPRE"):
+        px, mt = meta.get("regularMarketPrice"), meta.get("regularMarketTime")
+        if px and mt:
+            d = (datetime.datetime.utcfromtimestamp(mt) + datetime.timedelta(hours=9)).date()
+            print(f"    [소스] chart/meta ({state})  →  {d}  {px:,.2f}")
+            return d, float(px)
+
+    # ② 장중이거나 meta 부실 → 배열에서 '오늘이 아닌' 마지막 종가
+    past = [(d, c) for d, c in rows if d < today]
+    if past:
+        d, c = past[-1]
+        print(f"    [소스] chart/close 배열 (장중={state}, 오늘 제외)  →  {d}  {c:,.2f}")
+        return d, float(c)
+
+    # ③ 그래도 없으면 배열 마지막 (최후)
+    if rows:
+        print(f"    [소스] chart/close 최후  →  {rows[-1][0]}  {rows[-1][1]:,.2f}")
+        return rows[-1]
 
     raise ValueError("Yahoo 코스피 종가 확보 실패")
 
