@@ -160,6 +160,8 @@ def shell(title, desc, body, path, site_dir, schema="", extra_css="", nav_on="")
 <meta property="og:title" content="{title}"><meta property="og:description" content="{desc}">
 <meta property="og:type" content="website"><meta property="og:url" content="{BASE}/{url}">
 <meta name="theme-color" content="#0B1120">
+<link rel="icon" type="image/svg+xml" href="/favicon.svg">
+<link rel="apple-touch-icon" href="/favicon.svg">
 <meta name="robots" content="index,follow,max-snippet:-1,max-image-preview:large">
 {_verify}
 {schema}
