@@ -1,0 +1,51 @@
+name: Night Live
+
+on:
+  schedule:
+    - cron: "0,30 14-20 * * *"    # UTC 14:00~20:59 = KST 23:00~05:59
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+jobs:
+  live:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - run: pip install -r requirements.txt
+
+      - name: 야간 화면 생성
+        env:
+          LIGHT_BUILD: "1"
+        run: |
+          python scripts/build_site.py
+          python scripts/pages.py
+          python scripts/posts.py
+
+      - uses: actions/configure-pages@v5
+
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: site
+
+  deploy:
+    needs: live
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.d.outputs.page_url }}
+    steps:
+      - id: d
+        uses: actions/deploy-pages@v4
