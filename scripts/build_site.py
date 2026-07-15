@@ -93,6 +93,29 @@ def kospi_latest():
 
     raise ValueError("Yahoo 코스피 종가 확보 실패")
 
+def kospi_today():
+    """오늘 장의 실제 시가·현재가·상태를 반환한다 (장중 채점용).
+    개장 전에는 시가가 없으므로 None."""
+    try:
+        r = requests.get("https://query1.finance.yahoo.com/v8/finance/chart/^KS11",
+                         params={"interval": "1d", "range": "5d"},
+                         headers=UA, timeout=20)
+        meta = r.json()["chart"]["result"][0]["meta"]
+        mt = meta.get("regularMarketTime")
+        if not mt:
+            return None
+        d = (datetime.datetime.utcfromtimestamp(mt) + datetime.timedelta(hours=9)).date()
+        if d != KST.date():
+            return None  # meta가 아직 어제 값 = 오늘 개장 전
+        return {
+            "open": meta.get("regularMarketOpen") or meta.get("chartPreviousClose"),
+            "price": meta.get("regularMarketPrice"),
+            "state": meta.get("marketState", ""),
+        }
+    except Exception as e:
+        print(f"    kospi_today 실패: {e}")
+        return None
+
 live, fail = {}, []
 for f in FEAT:
     try:
@@ -182,45 +205,172 @@ def ruler(gap, lo, hi):
 </svg>'''
 
 
-# ═══════════ 5. HERO ═══════════
+# ═══════════ 5. HERO (시간대 인식) ═══════════
+import json as _json
+
+FC_PATH = ROOT / "data" / "forecast.json"
 LEAD = ('<div class="lead"><b>개장 갭</b>은 오늘 아침 코스피가 직전 종가보다 '
         '얼마나 높게(또는 낮게) 시작하는지를 말합니다.<br>'
-        '아래 숫자는 <b>코스피200 야간선물지수를 대변할 수 있는 간밤의 미국 시장 지표</b>로 환산한 값입니다. '
-        '예측이 아니라, 이미 형성된 가격을 코스피 단위로 옮긴 것에 가깝습니다.</div>')
+        '아래 숫자는 <b>코스피200 야간선물지수를 대변할 수 있는 간밤의 미국 시장 지표</b>로 '
+        '환산한 값입니다. 예측이 아니라, 이미 형성된 가격을 코스피 단위로 옮긴 것에 '
+        '가깝습니다.</div>')
 
-if ok and not warn:
+hour = KST.hour
+minute = KST.minute
+mins = hour * 60 + minute
+is_weekday = KST.weekday() < 5
+
+# 세션 구분 (KST 분 단위)
+#  개장전 06:00~08:59 / 장중 09:00~15:44 / 마감후 그 외
+if is_weekday and 6 * 60 <= mins < 9 * 60:
+    session = "pre"      # 🔵 골든타임
+elif is_weekday and 9 * 60 <= mins < 15 * 60 + 45:
+    session = "live"     # 🟢 장중
+else:
+    session = "post"     # ⚪ 마감후·야간
+
+# ── 오늘 예상을 저장/로드 ──
+forecast = None
+if FC_PATH.exists():
+    try:
+        forecast = _json.loads(FC_PATH.read_text(encoding="utf-8"))
+    except Exception:
+        forecast = None
+
+today_str = KST.strftime("%Y-%m-%d")
+# 개장 전에 계산이 성공했으면 '오늘 예상'을 저장 (그날 첫 저장만 유지)
+if ok and not warn and session == "pre":
+    if not forecast or forecast.get("date") != today_str:
+        forecast = {"date": today_str, "base_date": str(last_date),
+                    "base_close": round(last_close, 2), "gap": round(gap, 4),
+                    "lo": round(lo, 4), "hi": round(hi, 4),
+                    "regime": regime, "saved_at": KST.strftime("%H:%M")}
+        FC_PATH.write_text(_json.dumps(forecast, ensure_ascii=False, indent=2),
+                           encoding="utf-8")
+        print(f"  💾 오늘 예상 저장  {gap:+.2f}%  [{lo:+.2f}~{hi:+.2f}]")
+
+today_mkt = kospi_today() if session in ("live", "post") else None
+
+
+def ruler_html():
+    return ruler(gap, lo, hi) if (ok and gap is not None) else ""
+
+
+# ═══════════ HERO 분기 ═══════════
+if session == "pre" and ok and not warn:
+    # 🔵 개장 전 — 예상 (기존 로직)
     op = last_close * (1 + gap / 100)
     op_lo = last_close * (1 + lo / 100)
     op_hi = last_close * (1 + hi / 100)
     zw = ('<div class="zero-warn">예상 구간이 <b>0을 가로지릅니다.</b> '
           '상승·하락 방향조차 확정할 수 없습니다.</div>') if crosses else ""
     hero = f'''<section class="hero">
-<div class="eyebrow">오늘 코스피 개장 갭 · 환산</div>
+<div class="eyebrow">🔵 개장 전 · 오늘 코스피 개장 갭 예상</div>
 {LEAD}
 <div class="num mono {'up' if gap >= 0 else 'dn'}">{gap:+.2f}%</div>
 <div class="band">80% 구간 &nbsp;<b>{lo:+.2f}% ~ {hi:+.2f}%</b></div>
-
 <div class="pts">
-<div>직전 종가<b>{last_close:,.2f}</b><em>{last_date:%Y-%m-%d} 마감</em></div>
+<div>직전 종가<b>{last_close:,.2f}</b><em>{last_date:%m-%d} 마감</em></div>
 <div>환산 예상 시가<b class="{'up' if gap >= 0 else 'dn'}">{op:,.0f}</b>
 <em>{op_lo:,.0f} ~ {op_hi:,.0f}</em></div>
 </div>
-
-{ruler(gap, lo, hi)}{zw}
-
+{ruler_html()}{zw}
 <div class="howto"><div class="t">읽는 법</div><ul>
 <li><b>{gap:+.2f}%</b> — 직전 종가보다 약 {abs(gap):.1f}% {'높게' if gap >= 0 else '낮게'} 시작할 것으로 환산됩니다</li>
 <li><b>80% 구간</b> — 과거 사례 10번 중 약 8번은 이 범위 안에서 열렸습니다</li>
 <li><b>구간이 0을 가로지르면</b> — 상승·하락 방향조차 확정할 수 없다는 뜻입니다</li>
 <li><b>장중 흐름</b> — 개장 이후는 예측하지 않습니다 (R² 0.02, 무관)</li>
 </ul></div>
-
 <div class="stat">
 <div>국면<b>{regime}</b></div>
 <div>설명력 R²<b>{R['gap_r2']:.2f}</b></div>
 <div>오차<b>±{1.28 * R['gap_se']:.2f}%p</b></div>
 <div>표본<b>{R['n']}일</b></div>
 </div></section>'''
+
+elif session == "live":
+    # 🟢 장중 — 아침 예상 vs 실제 채점
+    fc_ok = forecast and forecast.get("date") == today_str
+    real_gap = None
+    if today_mkt and today_mkt.get("open") and fc_ok:
+        real_gap = (today_mkt["open"] / forecast["base_close"] - 1) * 100
+
+    if fc_ok and real_gap is not None:
+        fg, flo, fhi = forecast["gap"], forecast["lo"], forecast["hi"]
+        in_band = flo <= real_gap <= fhi
+        dir_ok = (fg >= 0) == (real_gap >= 0)
+        badge = ('<b class="yes">예상 범위 안</b>' if in_band
+                 else '<b class="no">예상 범위 밖</b>')
+        cur = today_mkt.get("price")
+        cur_html = (f'<div>현재 지수<b>{cur:,.2f}</b><em>장중</em></div>'
+                    if cur else '')
+        hero = f'''<section class="hero">
+<div class="eyebrow">🟢 장중 · 오늘 아침 예상은 맞았을까</div>
+<div class="lead" style="border:0;margin-bottom:14px;padding:0">
+개장했습니다. 오늘 새벽 {forecast["saved_at"]}에 저희가 예상한 갭과
+<b>실제 개장 결과</b>를 나란히 둡니다. 장중 흐름은 예측하지 않습니다.</div>
+<div class="pts">
+<div>아침 예상 갭<b class="{'up' if fg >= 0 else 'dn'}">{fg:+.2f}%</b>
+<em>{flo:+.2f} ~ {fhi:+.2f}</em></div>
+<div>실제 개장 갭<b class="{'up' if real_gap >= 0 else 'dn'}">{real_gap:+.2f}%</b>
+<em>시가 {today_mkt["open"]:,.0f}</em></div>
+</div>
+<div class="zero-warn" style="color:var(--{'good' if in_band else 'up'});
+ background:rgba({'61,214,140' if in_band else '255,95,86'},.08);
+ border-color:rgba({'61,214,140' if in_band else '255,95,86'},.3)">
+오늘 예상은 {badge}에 들어왔습니다. 방향 {'일치' if dir_ok else '불일치'}.
+&nbsp;오차 {abs(real_gap - fg):.2f}%p</div>
+<div class="pts" style="margin-top:12px">
+<div>직전 종가<b>{forecast["base_close"]:,.2f}</b><em>{forecast["base_date"][5:]} 마감</em></div>
+{cur_html}
+</div>
+<div class="howto"><div class="t">지금 시각에는</div><ul>
+<li>개장 갭은 <b>이미 확정</b>되었습니다. 위는 예상과 실제의 대조입니다</li>
+<li>장중 흐름(지금부터 마감까지)은 <b>예측하지 않습니다</b> (R² 0.02)</li>
+<li>오늘 결과는 <a href="/accuracy/" style="color:var(--down)">적중 기록</a>에 누적됩니다</li>
+</ul></div>
+<div class="stat">
+<div>국면<b>{forecast["regime"]}</b></div>
+<div>판정<b class="{'yes' if in_band else 'no'}">{'적중' if in_band else '벗어남'}</b></div>
+<div>방향<b>{'일치' if dir_ok else '불일치'}</b></div>
+</div></section>'''
+    else:
+        # 아침 예상이 없거나(주말 명일 등) 시가 못 구함
+        hero = f'''<section class="hero">
+<div class="eyebrow">🟢 장중</div>
+<div class="lead" style="border:0;padding:0">
+한국 증시가 열려 있습니다. 개장 갭은 이미 확정되었고,
+장중 흐름은 예측하지 않습니다.<br>
+다음 거래일 개장 갭 예상은 <b>내일 새벽 6시</b>에 갱신됩니다.</div>
+<div class="howto" style="border-top:0;margin-top:12px"><div class="t">지금 볼 것</div><ul>
+<li><a href="/accuracy/" style="color:var(--down)">예측 적중 기록</a> — 지금까지의 성적</li>
+<li><a href="/archive/" style="color:var(--down)">월별 갭 아카이브</a> — 과거 개장 갭</li>
+</ul></div></section>'''
+
+elif session == "post":
+    # ⚪ 마감 후 · 야간
+    fc_ok = forecast and forecast.get("date") == today_str
+    summary = ""
+    if fc_ok and today_mkt and today_mkt.get("open"):
+        rg = (today_mkt["open"] / forecast["base_close"] - 1) * 100
+        in_band = forecast["lo"] <= rg <= forecast["hi"]
+        summary = f'''<div class="pts">
+<div>오늘 아침 예상<b class="{'up' if forecast["gap"] >= 0 else 'dn'}">{forecast["gap"]:+.2f}%</b><em>새벽 {forecast["saved_at"]}</em></div>
+<div>실제 개장 갭<b class="{'up' if rg >= 0 else 'dn'}">{rg:+.2f}%</b>
+<em class="{'yes' if in_band else 'no'}">{'적중' if in_band else '벗어남'}</em></div>
+</div>'''
+    hero = f'''<section class="hero">
+<div class="eyebrow">⚪ 장 마감 · 다음 거래일 대기</div>
+<div class="lead" style="border:0;padding:0">
+한국 증시가 마감되었습니다. 오늘의 개장 갭 예상은 종료되었고,
+<b>다음 거래일 개장 갭 예상은 새벽 6시</b>에 갱신됩니다.</div>
+{summary}
+<div class="howto" style="border-top:0;margin-top:14px"><div class="t">지금 볼 것</div><ul>
+<li><a href="/accuracy/" style="color:var(--down)">예측 적중 기록</a> — 80% 구간 적중률 80.2%</li>
+<li><a href="/archive/" style="color:var(--down)">월별 갭 아카이브</a></li>
+<li><a href="/methodology.html" style="color:var(--down)">방법론과 한계</a></li>
+</ul></div></section>'''
+
 elif ok and warn:
     hero = f'''<section class="hero">
 <div class="eyebrow" style="color:var(--warn)">환산 보류</div>
@@ -228,13 +378,13 @@ elif ok and warn:
 <div class="num mono" style="font-size:1.4rem;color:var(--warn);line-height:1.45">
 숫자를 제시하지 않습니다</div>
 <p style="color:var(--dim);font-size:.9rem;margin-top:10px">{warn}.
-모델은 검증된 조건 안에서만 신뢰할 수 있습니다. 그 밖에서는
-예측값을 내지 않는 것이 정직한 대응이라고 판단했습니다.</p>
+모델은 검증된 조건 안에서만 신뢰할 수 있습니다.</p>
 <div class="stat">
 <div>참고 계산값 (신뢰 불가)<b style="color:var(--faint)">{gap:+.2f}%</b></div>
 <div>직전 종가<b>{last_close:,.2f}</b></div>
 <div>기준일<b>{last_date:%m-%d}</b></div>
 </div></section>'''
+
 else:
     hero = f'''<section class="hero">
 <div class="eyebrow" style="color:var(--warn)">데이터 수집 실패</div>{LEAD}
