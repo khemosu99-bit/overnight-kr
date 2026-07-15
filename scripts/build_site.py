@@ -223,12 +223,13 @@ is_weekday = KST.weekday() < 5
 # 세션 구분 (KST 분 단위)
 #  개장전 06:00~08:59 / 장중 09:00~15:44 / 마감후 그 외
 if is_weekday and 6 * 60 <= mins < 9 * 60:
-    session = "pre"      # 🔵 골든타임
+    session = "pre"       # 🔵 골든타임 06:00~08:59
 elif is_weekday and 9 * 60 <= mins < 15 * 60 + 45:
-    session = "live"     # 🟢 장중
+    session = "live"      # 🟢 장중 09:00~15:44
+elif mins >= 22 * 60 or mins < 6 * 60:
+    session = "night"     # 🌙 야간 22:00~05:59 (미국장 진행)
 else:
-    session = "post"     # ⚪ 마감후·야간
-
+    session = "post"      # ⚪ 마감후 15:45~21:59
 # ── 오늘 예상을 저장/로드 ──
 forecast = None
 if FC_PATH.exists():
@@ -346,6 +347,75 @@ elif session == "live":
 <li><a href="/accuracy/" style="color:var(--down)">예측 적중 기록</a> — 지금까지의 성적</li>
 <li><a href="/archive/" style="color:var(--down)">월별 갭 아카이브</a> — 과거 개장 갭</li>
 </ul></div></section>'''
+
+elif session == "night":
+    # 🌙 야간 · 미국장 진행 중 · 대용 지표 실시간
+    # 방향만 참고로 제시. 갭 숫자는 검증 안 된 사용이라 단정하지 않는다.
+    up_cnt = sum(1 for f in FEAT if f != "USDKRW_r" and live.get(f, {}).get("pct", 0) > 0)
+    dn_cnt = sum(1 for f in FEAT if f != "USDKRW_r" and live.get(f, {}).get("pct", 0) < 0)
+    tot = up_cnt + dn_cnt
+    if tot == 0:
+        flow, fcls = "혼조", "dim"
+    elif up_cnt > dn_cnt:
+        flow, fcls = "상승 우세", "up"
+    elif dn_cnt > up_cnt:
+        flow, fcls = "하락 우세", "dn"
+    else:
+        flow, fcls = "팽팽", "dim"
+
+    # 대용 지표 카드
+    live_rows = ""
+    for f in FEAT:
+        if f not in live:
+            continue
+        v = live[f]["pct"]
+        cls = "up" if v >= 0 else "dn"
+        arrow = "▲" if v >= 0 else "▼"
+        live_rows += f'''<div class="nlive">
+<div class="nlive-nm">{NAME[f]}<em>{DESC[f]}</em></div>
+<div class="nlive-v mono {cls}">{live[f]["price"]:,.2f}
+<em class="{cls}">{arrow} {v:+.2f}%</em></div></div>'''
+
+    # 미국장 마감(대략 05:00 KST)까지 남은 시간
+    close_h = 5
+    now_min = KST.hour * 60 + KST.minute
+    tgt_min = close_h * 60
+    if now_min >= tgt_min:  # 새벽 5~6시
+        remain = "곧 마감"
+    else:
+        left = tgt_min - now_min if now_min < tgt_min else 0
+        # 18시 이후면 다음날 05시까지
+        if KST.hour >= 18:
+            left = (24 - KST.hour) * 60 - KST.minute + tgt_min
+        remain = f"약 {left // 60}시간 {left % 60}분 후"
+
+    hero = f'''<section class="hero">
+<div class="eyebrow">🌙 미국장 진행 중 · 대용 지표 흐름</div>
+<div class="lead" style="border:0;padding:0;margin-bottom:16px">
+지금은 코스피200 야간선물을 대신하는 <b>미국 시장 지표</b>가
+실시간으로 움직이는 시간입니다. 아래는 현재까지의 흐름이며,
+<b>개장 갭은 미국장이 마감되는 새벽에 확정</b>됩니다.</div>
+
+<div class="nflow {fcls}">
+<div class="nflow-lb">현재 흐름</div>
+<div class="nflow-v">{flow}</div>
+<div class="nflow-sub">상승 {up_cnt} · 하락 {dn_cnt} (환율 제외)</div>
+</div>
+
+<div class="nlive-wrap">{live_rows}</div>
+
+<div class="zero-warn" style="color:var(--dim);
+ background:rgba(255,255,255,.04);border-color:var(--line)">
+⚠️ 미국장이 진행 중입니다. 위 값은 <b>현재가</b>이며 계속 변합니다.
+오늘의 개장 갭 환산은 <b>새벽 6시</b>에 확정됩니다. (미국장 마감 {remain})</div>
+
+<div class="howto"><div class="t">지금 이 화면은</div><ul>
+<li>야간선물 대신 <b>미국 대용 지표</b>의 실시간 흐름을 보여줍니다</li>
+<li>방향만 참고하십시오. <b>갭 숫자는 마감 후 확정</b>됩니다 (진행 중 값은 검증 밖)</li>
+<li>30분마다 갱신됩니다</li>
+</ul></div>
+<div class="stamp">마지막 갱신 · {KST:%m월 %d일 %H:%M} KST</div>
+</section>'''
 
 elif session == "post":
     # ⚪ 마감 후 · 야간
