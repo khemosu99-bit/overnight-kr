@@ -39,50 +39,57 @@ def quote(sym):
 
 
 def kospi_latest():
-    """직전 '확정' 종가와 그 날짜를 반환한다.
+    """직전 '확정' 종가와 날짜를 반환한다.
 
-    ⚠️ 핵심: 장중(marketState=REGULAR)에는 meta.regularMarketPrice 가
-       '현재가'라서 종가가 아니다. 이걸 종가로 쓰면 오늘 장중값을 기준으로
-       갭을 계산하는 치명적 오류가 난다.
+    두 소스의 약점을 서로 보완한다:
+      · meta.regularMarketPrice : 07-14 종가를 아는 유일한 소스.
+        단, 장중에는 '오늘 현재가'라서 날짜가 오늘이면 종가가 아니다.
+      · close[] 배열 : 한국 지수를 하루 늦게 채워 07-14가 아직 없을 수 있다.
 
-       - 장 마감/장후(CLOSED/POST/PRE)  → meta 값이 '확정 종가' → 사용
-       - 장중(REGULAR)                  → meta 무시, close[] 배열의
-                                          마지막 '완료된' 거래일 종가 사용
+    판단 기준은 'marketState'가 아니라 'meta가 가리키는 날짜'다.
+      · meta 날짜 < 오늘  → 확정 종가 → 사용
+      · meta 날짜 = 오늘  → 장중 현재가 → 버리고 배열에서 '오늘 이전' 마지막
     """
     r = requests.get("https://query1.finance.yahoo.com/v8/finance/chart/^KS11",
                      params={"interval": "1d", "range": "1mo"},
                      headers=UA, timeout=20)
     res = r.json()["chart"]["result"][0]
     meta = res.get("meta", {})
-    state = meta.get("marketState", "")
+    today = KST.date()
 
-    # close[] 배열에서 '값이 있는' 거래일만 추린다 (오늘 장중분은 Open=0이라 대개 빠짐)
+    # 배열에서 값이 있는 거래일 (오늘 장중분 제외)
     ts = res.get("timestamp", [])
     cl = res["indicators"]["quote"][0]["close"]
     rows = [((datetime.datetime.utcfromtimestamp(t) + datetime.timedelta(hours=9)).date(), c)
             for t, c in zip(ts, cl) if c]
-
-    today = KST.date()
-
-    # ① 장이 닫혀 있으면 meta 가 확정 종가
-    if state in ("CLOSED", "POST", "PRE", "POSTPOST", "PREPRE"):
-        px, mt = meta.get("regularMarketPrice"), meta.get("regularMarketTime")
-        if px and mt:
-            d = (datetime.datetime.utcfromtimestamp(mt) + datetime.timedelta(hours=9)).date()
-            print(f"    [소스] chart/meta ({state})  →  {d}  {px:,.2f}")
-            return d, float(px)
-
-    # ② 장중이거나 meta 부실 → 배열에서 '오늘이 아닌' 마지막 종가
     past = [(d, c) for d, c in rows if d < today]
-    if past:
-        d, c = past[-1]
-        print(f"    [소스] chart/close 배열 (장중={state}, 오늘 제외)  →  {d}  {c:,.2f}")
-        return d, float(c)
 
-    # ③ 그래도 없으면 배열 마지막 (최후)
-    if rows:
-        print(f"    [소스] chart/close 최후  →  {rows[-1][0]}  {rows[-1][1]:,.2f}")
-        return rows[-1]
+    # ── meta 후보 ──
+    meta_d = meta_px = None
+    px, mt = meta.get("regularMarketPrice"), meta.get("regularMarketTime")
+    if px and mt:
+        meta_d = (datetime.datetime.utcfromtimestamp(mt) + datetime.timedelta(hours=9)).date()
+        meta_px = float(px)
+
+    # ── 배열 후보 ──
+    arr_d, arr_px = (past[-1] if past else (None, None))
+
+    # ① meta 날짜가 오늘이 아니고(=확정), 배열보다 최신이면 meta 사용
+    if meta_d and meta_d < today and (arr_d is None or meta_d >= arr_d):
+        print(f"    [소스] meta (확정 {meta_d})  →  {meta_px:,.2f}"
+              f"  | 배열최신 {arr_d}")
+        return meta_d, meta_px
+
+    # ② 아니면 배열의 '오늘 이전' 마지막
+    if arr_d:
+        tag = "meta는 오늘값이라 제외" if (meta_d == today) else "meta 부실"
+        print(f"    [소스] close배열 ({tag})  →  {arr_d}  {arr_px:,.2f}")
+        return arr_d, arr_px
+
+    # ③ 최후: meta라도
+    if meta_d:
+        print(f"    [소스] meta 최후  →  {meta_d}  {meta_px:,.2f}")
+        return meta_d, meta_px
 
     raise ValueError("Yahoo 코스피 종가 확보 실패")
 
