@@ -1,0 +1,36 @@
+<!DOCTYPE html><html lang="ko"><head><meta charset="utf-8">
+<title>실시간 호출 테스트</title>
+<style>body{font-family:monospace;background:#0B1120;color:#E6EBF4;padding:20px}
+.ok{color:#3DD68C}.no{color:#FF5F56}</style></head><body>
+<h2>브라우저 → Yahoo 직접 호출 테스트</h2>
+<div id="out">테스트 중...</div>
+<script>
+const out = document.getElementById('out');
+const log = (m, cls='') => out.innerHTML += `<p class="${cls}">${m}</p>`;
+out.innerHTML = '';
+
+async function test(name, url) {
+  try {
+    const r = await fetch(url);
+    const j = await r.json();
+    const px = j.chart.result[0].meta.regularMarketPrice;
+    log(`✅ ${name}: ${px.toLocaleString()}`, 'ok');
+    return true;
+  } catch (e) {
+    log(`❌ ${name}: ${e.message}`, 'no');
+    return false;
+  }
+}
+
+(async () => {
+  log('① Yahoo 직접 (query1)');
+  await test('SOX', 'https://query1.finance.yahoo.com/v8/finance/chart/^SOX');
+  await test('나스닥선물', 'https://query1.finance.yahoo.com/v8/finance/chart/NQ=F');
+
+  log('<br>② Yahoo 프록시 경유 (corsproxy)');
+  await test('SOX(프록시)', 'https://corsproxy.io/?url=' +
+    encodeURIComponent('https://query1.finance.yahoo.com/v8/finance/chart/^SOX'));
+
+  log('<br>테스트 완료. ✅가 하나라도 있으면 실시간 가능.');
+})();
+</script></body></html>
