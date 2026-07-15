@@ -138,6 +138,11 @@ color:var(--faint);font-weight:400;margin-top:2px}
 .nlive-v{margin-top:8px;font-size:1.05rem;font-weight:700}
 .nlive-v em{display:block;font-style:normal;font-size:.8rem;
 font-weight:600;margin-top:2px}
+.wk-strip{display:flex;gap:8px;margin:4px 0}
+.wk-day{flex:1;text-align:center;background:rgba(255,255,255,.03);
+border:1px solid var(--line);border-radius:8px;padding:12px 4px}
+.wk-wd{font-size:.78rem;color:var(--faint);font-weight:600;margin-bottom:6px}
+.wk-gap{font-family:var(--mono);font-size:.92rem;font-weight:700}
 @media(max-width:420px){.nlive-wrap{grid-template-columns:1fr 1fr;gap:8px}
 .nlive{padding:11px 12px}.nflow-v{font-size:1.7rem}}
 @media(max-width:420px){.hero .num{font-size:2.6rem}section{padding:17px 15px}
@@ -153,22 +158,19 @@ font-weight:600;margin-top:2px}
 실시간으로 움직이는 시간입니다. 아래는 현재까지의 흐름이며,
 <b>개장 갭은 미국장이 마감되는 새벽에 확정</b>됩니다.</div>
 
-<div class="nflow dn">
+<div class="nflow dim">
 <div class="nflow-lb">현재 흐름</div>
-<div class="nflow-v">하락 우세</div>
-<div class="nflow-sub">상승 1 · 하락 2 (환율 제외)</div>
+<div class="nflow-v">팽팽</div>
+<div class="nflow-sub">상승 1 · 하락 1 (환율 제외)</div>
 </div>
 
 <div class="nlive-wrap"><div class="nlive">
 <div class="nlive-nm">EWY<em>미국 상장 한국 ETF</em></div>
-<div class="nlive-v mono dn">170.20
-<em class="dn">▼ -3.83%</em></div></div><div class="nlive">
-<div class="nlive-nm">반도체(SOX)<em>필라델피아 반도체지수</em></div>
-<div class="nlive-v mono dn">12,282.36
-<em class="dn">▼ -3.00%</em></div></div><div class="nlive">
+<div class="nlive-v mono dn">170.94
+<em class="dn">▼ -3.41%</em></div></div><div class="nlive">
 <div class="nlive-nm">나스닥<em>나스닥 종합</em></div>
-<div class="nlive-v mono up">26,183.05
-<em class="up">▲ +0.29%</em></div></div><div class="nlive">
+<div class="nlive-v mono up">26,224.12
+<em class="up">▲ +0.45%</em></div></div><div class="nlive">
 <div class="nlive-nm">달러/원<em>원달러 환율</em></div>
 <div class="nlive-v mono dn">1,486.17
 <em class="dn">▼ -0.77%</em></div></div></div>
@@ -176,14 +178,14 @@ font-weight:600;margin-top:2px}
 <div class="zero-warn" style="color:var(--dim);
  background:rgba(255,255,255,.04);border-color:var(--line)">
 ⚠️ 미국장이 진행 중입니다. 위 값은 <b>현재가</b>이며 계속 변합니다.
-오늘의 개장 갭 환산은 <b>새벽 6시</b>에 확정됩니다. (미국장 마감 약 0시간 34분 후)</div>
+오늘의 개장 갭 환산은 <b>새벽 6시</b>에 확정됩니다. (미국장 마감 약 0시간 28분 후)</div>
 
 <div class="howto"><div class="t">지금 이 화면은</div><ul>
 <li>야간선물 대신 <b>미국 대용 지표</b>의 실시간 흐름을 보여줍니다</li>
 <li>방향만 참고하십시오. <b>갭 숫자는 마감 후 확정</b>됩니다 (진행 중 값은 검증 밖)</li>
 <li>30분마다 갱신됩니다</li>
 </ul></div>
-<div class="stamp">마지막 갱신 · 07월 16일 04:26 KST</div>
+<div class="stamp">마지막 갱신 · 07월 16일 04:32 KST</div>
 </section>
 
 <section><div class="eyebrow">근거 · 간밤 해외 지표</div>
@@ -191,24 +193,8 @@ font-weight:600;margin-top:2px}
 <p style="color:var(--dim);font-size:.88rem;margin-bottom:6px">
 각 지표가 갭에 얼마나 기여했는지 분해했습니다. 막대가 오른쪽이면 갭을 위로,
 왼쪽이면 아래로 밀었다는 뜻입니다.</p>
-<div class="ind"><div class="ind-top">
-<div class="ind-nm">EWY<em>미국 상장 한국 ETF</em></div>
-<div class="ind-v dn">-3.83%<em>170.20</em></div></div>
-<div class="bar"><i style="left:50%;width:7.293574011294539%;background:var(--up)"></i><span class="mid"></span></div>
-<div class="bar-lb"><span>갭 기여도</span><span class="dn">+0.09%p</span></div></div><div class="ind"><div class="ind-top">
-<div class="ind-nm">반도체(SOX)<em>필라델피아 반도체지수</em></div>
-<div class="ind-v dn">-3.00%<em>12,282.36</em></div></div>
-<div class="bar"><i style="left:0.0%;width:50.0%;background:var(--down)"></i><span class="mid"></span></div>
-<div class="bar-lb"><span>갭 기여도</span><span class="dn">-0.58%p</span></div></div><div class="ind"><div class="ind-top">
-<div class="ind-nm">나스닥<em>나스닥 종합</em></div>
-<div class="ind-v up">+0.29%<em>26,183.05</em></div></div>
-<div class="bar"><i style="left:50%;width:17.897435570415023%;background:var(--up)"></i><span class="mid"></span></div>
-<div class="bar-lb"><span>갭 기여도</span><span class="up">+0.21%p</span></div></div><div class="ind"><div class="ind-top">
-<div class="ind-nm">달러/원<em>원달러 환율</em></div>
-<div class="ind-v dn">-0.77%<em>1,486.17</em></div></div>
-<div class="bar"><i style="left:50%;width:3.4588002488691205%;background:var(--up)"></i><span class="mid"></span></div>
-<div class="bar-lb"><span>갭 기여도</span><span class="dn">+0.04%p</span></div></div>
-<div class="stamp">미국장 마감 기준 · 07월 16일 04:26 KST
+
+<div class="stamp">미국장 마감 기준 · 07월 16일 04:32 KST
 &nbsp;(0시간 전)</div></section>
 
 <section><div class="eyebrow">국면별 정확도</div>
@@ -269,4 +255,4 @@ font-weight:600;margin-top:2px}
 <footer>데이터 · 한국거래소 KRX Open API, Yahoo Finance<br>
 이 사이트는 과거 데이터의 통계적 관계만 계산합니다. 투자 조언이나 매매 권유가 아니며,
 투자 판단의 근거로 사용될 수 없습니다.<br>
-갱신 2026-07-16 04:26 KST</footer></div><script data-goatcounter="https://nightgap.goatcounter.com/count" async src="//gc.zgo.at/count.js"></script></body></html>
+갱신 2026-07-16 04:32 KST</footer></div><script data-goatcounter="https://nightgap.goatcounter.com/count" async src="//gc.zgo.at/count.js"></script></body></html>
