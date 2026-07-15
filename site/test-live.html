@@ -1,36 +1,64 @@
 <!DOCTYPE html><html lang="ko"><head><meta charset="utf-8">
-<title>실시간 호출 테스트</title>
-<style>body{font-family:monospace;background:#0B1120;color:#E6EBF4;padding:20px}
-.ok{color:#3DD68C}.no{color:#FF5F56}</style></head><body>
-<h2>브라우저 → Yahoo 직접 호출 테스트</h2>
-<div id="out">테스트 중...</div>
+<title>실시간 호출 테스트 v2</title>
+<style>body{font-family:monospace;background:#0B1120;color:#E6EBF4;padding:20px;line-height:1.7}
+.ok{color:#3DD68C}.no{color:#FF5F56}.dim{color:#8A96AC;font-size:.85em}
+h3{margin:18px 0 6px;color:#46A2FF}</style></head><body>
+<h2>실시간 호출 테스트 v2</h2>
+<div id="out"></div>
 <script>
 const out = document.getElementById('out');
-const log = (m, cls='') => out.innerHTML += `<p class="${cls}">${m}</p>`;
-out.innerHTML = '';
+const log = (m, cls='') => out.innerHTML += `<div class="${cls}">${m}</div>`;
 
-async function test(name, url) {
+const YURL = 'https://query1.finance.yahoo.com/v8/finance/chart/^SOX';
+
+// 여러 프록시를 각기 다른 방식으로 시도
+const proxies = [
+  { name: 'allorigins (raw)',
+    url: 'https://api.allorigins.win/raw?url=' + encodeURIComponent(YURL),
+    parse: j => j },
+  { name: 'allorigins (get)',
+    url: 'https://api.allorigins.win/get?url=' + encodeURIComponent(YURL),
+    parse: j => JSON.parse(j.contents) },
+  { name: 'corsproxy.io',
+    url: 'https://corsproxy.io/?url=' + encodeURIComponent(YURL),
+    parse: j => j },
+  { name: 'codetabs',
+    url: 'https://api.codetabs.com/v1/proxy/?quest=' + YURL,
+    parse: j => j },
+  { name: 'thingproxy',
+    url: 'https://thingproxy.freeboard.io/fetch/' + YURL,
+    parse: j => j },
+];
+
+async function test(p) {
+  const t0 = Date.now();
   try {
-    const r = await fetch(url);
-    const j = await r.json();
+    const r = await fetch(p.url);
+    const raw = await r.json();
+    const j = p.parse(raw);
     const px = j.chart.result[0].meta.regularMarketPrice;
-    log(`✅ ${name}: ${px.toLocaleString()}`, 'ok');
-    return true;
+    const ms = Date.now() - t0;
+    log(`✅ <b>${p.name}</b> → SOX ${px.toLocaleString()} <span class="dim">(${ms}ms)</span>`, 'ok');
+    return { name: p.name, ok: true, ms };
   } catch (e) {
-    log(`❌ ${name}: ${e.message}`, 'no');
-    return false;
+    log(`❌ ${p.name}: ${e.message}`, 'no');
+    return { name: p.name, ok: false };
   }
 }
 
 (async () => {
-  log('① Yahoo 직접 (query1)');
-  await test('SOX', 'https://query1.finance.yahoo.com/v8/finance/chart/^SOX');
-  await test('나스닥선물', 'https://query1.finance.yahoo.com/v8/finance/chart/NQ=F');
+  log('<h3>프록시별 테스트 (SOX 지수)</h3>');
+  const results = [];
+  for (const p of proxies) results.push(await test(p));
 
-  log('<br>② Yahoo 프록시 경유 (corsproxy)');
-  await test('SOX(프록시)', 'https://corsproxy.io/?url=' +
-    encodeURIComponent('https://query1.finance.yahoo.com/v8/finance/chart/^SOX'));
-
-  log('<br>테스트 완료. ✅가 하나라도 있으면 실시간 가능.');
+  const winners = results.filter(r => r.ok).sort((a,b) => a.ms - b.ms);
+  log('<h3>결론</h3>');
+  if (winners.length) {
+    log(`✅ 사용 가능: <b>${winners.map(w => w.name).join(', ')}</b>`, 'ok');
+    log(`→ 가장 빠른 것: <b>${winners[0].name}</b> (${winners[0].ms}ms)`, 'ok');
+    log('<span class="dim">→ 브라우저 실시간 가능. 이 프록시로 야간 라이브 구현.</span>');
+  } else {
+    log('❌ 모든 프록시 실패 → 30분 준실시간 방식으로', 'no');
+  }
 })();
 </script></body></html>
