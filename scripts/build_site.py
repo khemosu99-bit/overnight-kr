@@ -226,7 +226,7 @@ if is_weekday and 6 * 60 <= mins < 9 * 60:
     session = "pre"       # 🔵 골든타임 06:00~08:59
 elif is_weekday and 9 * 60 <= mins < 15 * 60 + 45:
     session = "live"      # 🟢 장중 09:00~15:44
-elif mins >= 22 * 60 or mins < 6 * 60:
+elif mins >= 23 * 60 or mins < 6 * 60:
     session = "night"     # 🌙 야간 22:00~05:59 (미국장 진행)
 else:
     session = "post"      # ⚪ 마감후 15:45~21:59
