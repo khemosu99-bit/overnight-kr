@@ -245,10 +245,15 @@ if ok and not warn and session == "pre":
         forecast = {"date": today_str, "base_date": str(last_date),
                     "base_close": round(last_close, 2), "gap": round(gap, 4),
                     "lo": round(lo, 4), "hi": round(hi, 4),
-                    "regime": regime, "saved_at": KST.strftime("%H:%M")}
+                    "regime": regime, "saved_at": KST.strftime("%H:%M"),
+                    "indicators": [
+                        {"key": f, "name": NAME[f], "pct": round(live[f]["pct"], 2),
+                         "price": round(live[f]["price"], 2),
+                         "contrib": round(c, 3)}
+                        for f, v, c in contrib]}
         FC_PATH.write_text(_json.dumps(forecast, ensure_ascii=False, indent=2),
                            encoding="utf-8")
-        print(f"  💾 오늘 예상 저장  {gap:+.2f}%  [{lo:+.2f}~{hi:+.2f}]")
+        print(f"  💾 오늘 예상 저장  {gap:+.2f}%  [{lo:+.2f}~{hi:+.2f}]  지표 {len(contrib)}개")
 
 today_mkt = kospi_today() if session in ("live", "post") else None
 
@@ -290,7 +295,7 @@ if session == "pre" and ok and not warn:
 </div></section>'''
 
 elif session == "live":
-    # 🟢 장중 — 아침 예상 vs 실제 채점
+    # 🟢 장중 — 아침 예상 vs 실제 채점 + 근거 지표
     fc_ok = forecast and forecast.get("date") == today_str
     real_gap = None
     if today_mkt and today_mkt.get("open") and fc_ok:
@@ -300,43 +305,79 @@ elif session == "live":
         fg, flo, fhi = forecast["gap"], forecast["lo"], forecast["hi"]
         in_band = flo <= real_gap <= fhi
         dir_ok = (fg >= 0) == (real_gap >= 0)
+        err = abs(real_gap - fg)
         badge = ('<b class="yes">예상 범위 안</b>' if in_band
                  else '<b class="no">예상 범위 밖</b>')
         cur = today_mkt.get("price")
-        cur_html = (f'<div>현재 지수<b>{cur:,.2f}</b><em>장중</em></div>'
-                    if cur else '')
+
+        # 지표 카드 (아침에 저장된 값)
+        inds_html = ""
+        for ind in forecast.get("indicators", []):
+            v = ind["pct"]
+            c = ind["contrib"]
+            cls = "up" if v >= 0 else "dn"
+            ccls = "up" if c >= 0 else "dn"
+            arrow = "▲" if v >= 0 else "▼"
+            inds_html += f'''<div class="nlive">
+<div class="nlive-nm">{ind["name"]}<em>갭 기여 {c:+.2f}%p</em></div>
+<div class="nlive-v mono {cls}">{arrow} {v:+.2f}%
+<em class="{ccls}">{ind["price"]:,.2f}</em></div></div>'''
+
+        # 현재 지수 vs 시가 (장중 흐름 — 참고용, 예측 아님)
+        intra_html = ""
+        if cur and today_mkt.get("open"):
+            intra = (cur / today_mkt["open"] - 1) * 100
+            icls = "up" if intra >= 0 else "dn"
+            intra_html = f'''<div class="pts" style="margin-top:12px">
+<div>현재 지수<b>{cur:,.2f}</b><em>장중</em></div>
+<div>시가 대비<b class="{icls}">{intra:+.2f}%</b><em>참고 · 예측 아님</em></div>
+</div>'''
+
         hero = f'''<section class="hero">
 <div class="eyebrow">🟢 장중 · 오늘 아침 예상은 맞았을까</div>
-<div class="lead" style="border:0;margin-bottom:14px;padding:0">
+<div class="lead" style="border:0;margin-bottom:16px;padding:0">
 개장했습니다. 오늘 새벽 {forecast["saved_at"]}에 저희가 예상한 갭과
 <b>실제 개장 결과</b>를 나란히 둡니다. 장중 흐름은 예측하지 않습니다.</div>
+
 <div class="pts">
 <div>아침 예상 갭<b class="{'up' if fg >= 0 else 'dn'}">{fg:+.2f}%</b>
 <em>{flo:+.2f} ~ {fhi:+.2f}</em></div>
 <div>실제 개장 갭<b class="{'up' if real_gap >= 0 else 'dn'}">{real_gap:+.2f}%</b>
 <em>시가 {today_mkt["open"]:,.0f}</em></div>
 </div>
+
 <div class="zero-warn" style="color:var(--{'good' if in_band else 'up'});
  background:rgba({'61,214,140' if in_band else '255,95,86'},.08);
  border-color:rgba({'61,214,140' if in_band else '255,95,86'},.3)">
-오늘 예상은 {badge}에 들어왔습니다. 방향 {'일치' if dir_ok else '불일치'}.
-&nbsp;오차 {abs(real_gap - fg):.2f}%p</div>
-<div class="pts" style="margin-top:12px">
-<div>직전 종가<b>{forecast["base_close"]:,.2f}</b><em>{forecast["base_date"][5:]} 마감</em></div>
-{cur_html}
-</div>
-<div class="howto"><div class="t">지금 시각에는</div><ul>
-<li>개장 갭은 <b>이미 확정</b>되었습니다. 위는 예상과 실제의 대조입니다</li>
-<li>장중 흐름(지금부터 마감까지)은 <b>예측하지 않습니다</b> (R² 0.02)</li>
-<li>오늘 결과는 <a href="/accuracy/" style="color:var(--down)">적중 기록</a>에 누적됩니다</li>
-</ul></div>
+오늘 예상은 {badge}에 들어왔습니다. 방향 {'일치' if dir_ok else '불일치'} ·
+오차 {err:.2f}%p</div>
+
+{intra_html}
+
 <div class="stat">
 <div>국면<b>{forecast["regime"]}</b></div>
 <div>판정<b class="{'yes' if in_band else 'no'}">{'적중' if in_band else '벗어남'}</b></div>
 <div>방향<b>{'일치' if dir_ok else '불일치'}</b></div>
-</div></section>'''
+<div>직전 종가<b>{forecast["base_close"]:,.0f}</b></div>
+</div></section>
+
+<section><div class="eyebrow">간밤 이 지표들이 예상을 만들었습니다</div>
+<h2>새벽 {forecast["saved_at"]} 기준 · 미국장 마감값</h2>
+<div class="nlive-wrap">{inds_html}</div>
+<p style="color:var(--dim);font-size:.84rem;margin-top:12px">
+개장 갭 예상은 위 지표들의 조합으로 계산됩니다. 각 지표 옆의 '갭 기여'는
+그 지표가 오늘 예상 갭({fg:+.2f}%)에 얼마나 기여했는지를 나타냅니다.</p></section>
+
+<section><div class="eyebrow">지금부터 마감까지</div>
+<h2>장중 흐름은 예측하지 않습니다</h2>
+<p style="color:var(--dim);font-size:.92rem">
+개장 갭은 이미 확정되었습니다. 위는 <b style="color:var(--text)">예상과 실제의 대조</b>입니다.
+지금부터 마감까지의 흐름은 간밤 지표와 통계적으로 무관했습니다
+(R² 0.02). 그래서 저희는 장중을 예측하지 않습니다.</p>
+<p style="color:var(--dim);font-size:.92rem;margin-top:10px">
+오늘 결과는 <a href="/accuracy/" style="color:var(--down)">예측 적중 기록</a>에
+자동으로 누적됩니다. 마감 후 최종 확정됩니다.</p></section>'''
     else:
-        # 아침 예상이 없거나(주말 명일 등) 시가 못 구함
         hero = f'''<section class="hero">
 <div class="eyebrow">🟢 장중</div>
 <div class="lead" style="border:0;padding:0">
@@ -344,7 +385,7 @@ elif session == "live":
 장중 흐름은 예측하지 않습니다.<br>
 다음 거래일 개장 갭 예상은 <b>내일 새벽 6시</b>에 갱신됩니다.</div>
 <div class="howto" style="border-top:0;margin-top:12px"><div class="t">지금 볼 것</div><ul>
-<li><a href="/accuracy/" style="color:var(--down)">예측 적중 기록</a> — 지금까지의 성적</li>
+<li><a href="/accuracy/" style="color:var(--down)">예측 적중 기록</a> — 80% 구간 적중률 80.2%</li>
 <li><a href="/archive/" style="color:var(--down)">월별 갭 아카이브</a> — 과거 개장 갭</li>
 </ul></div></section>'''
 
