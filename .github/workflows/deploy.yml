@@ -2,7 +2,7 @@ name: Build & Deploy
 
 on:
   schedule:
-    - cron: "0 22 * * 0-4"    # 07:00 KST
+    - cron: "0 21 * * 0-4"    # 07:00 KST
     - cron: "0 0 * * 1-5"     # 09:00 KST
     - cron: "45 6 * * 1-5"    # 15:45 KST 마감
   push:
