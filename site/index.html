@@ -152,44 +152,40 @@ border:1px solid var(--line);border-radius:8px;padding:12px 4px}
 <div class="tag">간밤 해외 지표로 오늘 코스피 개장 갭을 환산합니다</div>
 <nav><a href="/" class="on">대시보드</a><a href="/accuracy/" class="">적중 기록</a><a href="/archive/" class="">아카이브</a><a href="/posts/" class="">글</a><a href="/guide.html" class="">제도</a><a href="/methodology.html" class="">방법론</a></nav></header>
 <section class="hero">
-<div class="eyebrow">🌙 미국장 진행 중 · 대용 지표 흐름</div>
-<div class="lead" style="border:0;padding:0;margin-bottom:16px">
-지금은 코스피200 야간선물을 대신하는 <b>미국 시장 지표</b>가
-실시간으로 움직이는 시간입니다. 아래는 현재까지의 흐름이며,
-<b>개장 갭은 미국장이 마감되는 새벽에 확정</b>됩니다.</div>
-
-<div class="nflow dn">
-<div class="nflow-lb">현재 흐름</div>
-<div class="nflow-v">하락 우세</div>
-<div class="nflow-sub">상승 0 · 하락 3 (환율 제외)</div>
+<div class="eyebrow">🔵 개장 전 · 오늘 코스피 개장 갭 예상</div>
+<div class="lead"><b>개장 갭</b>은 오늘 아침 코스피가 직전 종가보다 얼마나 높게(또는 낮게) 시작하는지를 말합니다.<br>아래 숫자는 <b>코스피200 야간선물지수를 대변할 수 있는 간밤의 미국 시장 지표</b>로 환산한 값입니다. 예측이 아니라, 이미 형성된 가격을 코스피 단위로 옮긴 것에 가깝습니다.</div>
+<div class="num mono dn">-1.48%</div>
+<div class="band">80% 구간 &nbsp;<b>-4.05% ~ +1.10%</b></div>
+<div class="pts">
+<div>직전 종가<b>6,820.60</b><em>07-16 마감</em></div>
+<div>환산 예상 시가<b class="dn">6,720</b>
+<em>6,544 ~ 6,896</em></div>
 </div>
-
-<div class="nlive-wrap"><div class="nlive">
-<div class="nlive-nm">EWY<em>미국 상장 한국 ETF</em></div>
-<div class="nlive-v mono dn">164.81
-<em class="dn">▼ -3.98%</em></div></div><div class="nlive">
-<div class="nlive-nm">반도체(SOX)<em>필라델피아 반도체지수</em></div>
-<div class="nlive-v mono dn">11,866.84
-<em class="dn">▼ -4.29%</em></div></div><div class="nlive">
-<div class="nlive-nm">나스닥<em>나스닥 종합</em></div>
-<div class="nlive-v mono dn">26,004.26
-<em class="dn">▼ -1.01%</em></div></div><div class="nlive">
-<div class="nlive-nm">달러/원<em>원달러 환율</em></div>
-<div class="nlive-v mono dn">1,479.20
-<em class="dn">▼ -0.58%</em></div></div></div>
-
-<div class="zero-warn" style="color:var(--dim);
- background:rgba(255,255,255,.04);border-color:var(--line)">
-⚠️ 미국장이 진행 중입니다. 위 값은 <b>현재가</b>이며 계속 변합니다.
-오늘의 개장 갭 환산은 <b>새벽 6시</b>에 확정됩니다. (미국장 마감 약 3시간 45분 후)</div>
-
-<div class="howto"><div class="t">지금 이 화면은</div><ul>
-<li>야간선물 대신 <b>미국 대용 지표</b>의 실시간 흐름을 보여줍니다</li>
-<li>방향만 참고하십시오. <b>갭 숫자는 마감 후 확정</b>됩니다 (진행 중 값은 검증 밖)</li>
-<li>30분마다 갱신됩니다</li>
+<svg viewBox="0 0 640 132" class="ruler" role="img"
+ aria-label="개장 갭 예상 -1.48%, 80% 구간 -4.05% ~ +1.10%">
+<text x="14" y="20" fill="var(--down)" font-size="11" letter-spacing=".08em">◀ 갭하락</text>
+<text x="626" y="20" fill="var(--up)" font-size="11" text-anchor="end" letter-spacing=".08em">갭상승 ▶</text>
+<line x1="20" y1="74" x2="620" y2="74" stroke="var(--line)" stroke-width="1"/><line x1="128.6" y1="74" x2="128.6" y2="80" stroke="var(--faint)" stroke-width="1"/><text x="128.6" y="98" fill="var(--faint)" font-size="11" text-anchor="middle" class="mono">-4%</text><line x1="224.3" y1="74" x2="224.3" y2="80" stroke="var(--faint)" stroke-width="1"/><text x="224.3" y="98" fill="var(--faint)" font-size="11" text-anchor="middle" class="mono">-2%</text><line x1="415.7" y1="74" x2="415.7" y2="80" stroke="var(--faint)" stroke-width="1"/><text x="415.7" y="98" fill="var(--faint)" font-size="11" text-anchor="middle" class="mono">+2%</text><line x1="511.4" y1="74" x2="511.4" y2="80" stroke="var(--faint)" stroke-width="1"/><text x="511.4" y="98" fill="var(--faint)" font-size="11" text-anchor="middle" class="mono">+4%</text>
+<rect x="105.18518518518522" y="40" width="273.15656944721013" height="30" rx="2" fill="var(--down)" opacity="0.16"/>
+<line x1="105.18518518518522" y1="38" x2="105.18518518518522" y2="72" stroke="var(--down)" stroke-width="1.5" opacity=".55"/>
+<line x1="378.34175463239535" y1="38" x2="378.34175463239535" y2="72" stroke="var(--down)" stroke-width="1.5" opacity=".55"/>
+<line x1="320.0" y1="30" x2="320.0" y2="82" stroke="var(--text)" stroke-width="1.5" opacity=".9"/>
+<text x="320.0" y="118" fill="var(--dim)" font-size="11" text-anchor="middle" class="mono">0</text>
+<circle cx="241.76346990879028" cy="55" r="6.5" fill="var(--down)"/>
+<circle cx="241.76346990879028" cy="55" r="11" fill="none" stroke="var(--down)" stroke-width="1.5" opacity=".4"/>
+</svg><div class="zero-warn">예상 구간이 <b>0을 가로지릅니다.</b> 상승·하락 방향조차 확정할 수 없습니다.</div>
+<div class="howto"><div class="t">읽는 법</div><ul>
+<li><b>-1.48%</b> — 직전 종가보다 약 1.5% 낮게 시작할 것으로 환산됩니다</li>
+<li><b>80% 구간</b> — 과거 사례 10번 중 약 8번은 이 범위 안에서 열렸습니다</li>
+<li><b>구간이 0을 가로지르면</b> — 상승·하락 방향조차 확정할 수 없다는 뜻입니다</li>
+<li><b>장중 흐름</b> — 개장 이후는 예측하지 않습니다 (R² 0.02, 무관)</li>
 </ul></div>
-<div class="stamp">마지막 갱신 · 07월 17일 01:15 KST</div>
-</section>
+<div class="stat">
+<div>국면<b>고변동</b></div>
+<div>설명력 R²<b>0.36</b></div>
+<div>오차<b>±2.58%p</b></div>
+<div>표본<b>83일</b></div>
+</div></section>
 
 <section><div class="eyebrow">근거 · 간밤 해외 지표</div>
 <h2>이 숫자들이 위의 갭을 만들었습니다</h2>
@@ -198,22 +194,22 @@ border:1px solid var(--line);border-radius:8px;padding:12px 4px}
 왼쪽이면 아래로 밀었다는 뜻입니다.</p>
 <div class="ind"><div class="ind-top">
 <div class="ind-nm">EWY<em>미국 상장 한국 ETF</em></div>
-<div class="ind-v dn">-3.98%<em>164.81</em></div></div>
-<div class="bar"><i style="left:50%;width:2.5871113364905165%;background:var(--up)"></i><span class="mid"></span></div>
-<div class="bar-lb"><span>갭 기여도</span><span class="dn">+0.04%p</span></div></div><div class="ind"><div class="ind-top">
+<div class="ind-v dn">-4.82%<em>163.36</em></div></div>
+<div class="bar"><i style="left:50%;width:2.335426425518664%;background:var(--up)"></i><span class="mid"></span></div>
+<div class="bar-lb"><span>갭 기여도</span><span class="dn">+0.05%p</span></div></div><div class="ind"><div class="ind-top">
 <div class="ind-nm">반도체(SOX)<em>필라델피아 반도체지수</em></div>
-<div class="ind-v dn">-4.29%<em>11,866.84</em></div></div>
-<div class="bar"><i style="left:0.0%;width:50.0%;background:var(--down)"></i><span class="mid"></span></div>
-<div class="bar-lb"><span>갭 기여도</span><span class="dn">-0.80%p</span></div></div><div class="ind"><div class="ind-top">
+<div class="ind-v dn">-4.29%<em>11,867.50</em></div></div>
+<div class="bar"><i style="left:12.814876084907688%;width:37.18512391509231%;background:var(--down)"></i><span class="mid"></span></div>
+<div class="bar-lb"><span>갭 기여도</span><span class="dn">-0.79%p</span></div></div><div class="ind"><div class="ind-top">
 <div class="ind-nm">나스닥<em>나스닥 종합</em></div>
-<div class="ind-v dn">-1.01%<em>26,004.26</em></div></div>
-<div class="bar"><i style="left:4.059641347781472%;width:45.94035865221853%;background:var(--down)"></i><span class="mid"></span></div>
-<div class="bar-lb"><span>갭 기여도</span><span class="dn">-0.73%p</span></div></div><div class="ind"><div class="ind-top">
+<div class="ind-v dn">-1.47%<em>25,881.95</em></div></div>
+<div class="bar"><i style="left:0.0%;width:50.0%;background:var(--down)"></i><span class="mid"></span></div>
+<div class="bar-lb"><span>갭 기여도</span><span class="dn">-1.07%p</span></div></div><div class="ind"><div class="ind-top">
 <div class="ind-nm">달러/원<em>원달러 환율</em></div>
-<div class="ind-v dn">-0.58%<em>1,479.20</em></div></div>
-<div class="bar"><i style="left:50%;width:2.601114534643%;background:var(--up)"></i><span class="mid"></span></div>
-<div class="bar-lb"><span>갭 기여도</span><span class="dn">+0.04%p</span></div></div>
-<div class="stamp">미국장 마감 기준 · 07월 17일 01:15 KST
+<div class="ind-v dn">-0.49%<em>1,478.93</em></div></div>
+<div class="bar"><i style="left:50%;width:1.6240434032718167%;background:var(--up)"></i><span class="mid"></span></div>
+<div class="bar-lb"><span>갭 기여도</span><span class="dn">+0.03%p</span></div></div>
+<div class="stamp">미국장 마감 기준 · 07월 17일 06:15 KST
 &nbsp;(0시간 전)</div></section>
 
 <section><div class="eyebrow">국면별 정확도</div>
@@ -274,4 +270,4 @@ border:1px solid var(--line);border-radius:8px;padding:12px 4px}
 <footer>데이터 · 한국거래소 KRX Open API, Yahoo Finance<br>
 이 사이트는 과거 데이터의 통계적 관계만 계산합니다. 투자 조언이나 매매 권유가 아니며,
 투자 판단의 근거로 사용될 수 없습니다.<br>
-갱신 2026-07-17 01:15 KST</footer></div><script data-goatcounter="https://nightgap.goatcounter.com/count" async src="//gc.zgo.at/count.js"></script></body></html>
+갱신 2026-07-17 06:15 KST</footer></div><script data-goatcounter="https://nightgap.goatcounter.com/count" async src="//gc.zgo.at/count.js"></script></body></html>
