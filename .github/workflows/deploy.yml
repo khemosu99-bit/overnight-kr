@@ -5,13 +5,14 @@ on:
     - cron: "0 22 * * 0-4"    # 07:00 KST
     - cron: "0 0 * * 1-5"     # 09:00 KST
     - cron: "45 6 * * 1-5"    # 15:45 KST 마감
-
   push:
     branches: [main]
     paths:
       - 'posts/**'
       - 'scripts/**'
   workflow_dispatch:
+  repository_dispatch:
+    types: [full_build]
 
 permissions:
   contents: write
