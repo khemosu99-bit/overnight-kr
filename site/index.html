@@ -152,44 +152,17 @@ border:1px solid var(--line);border-radius:8px;padding:12px 4px}
 <div class="tag">간밤 해외 지표로 오늘 코스피 개장 갭을 환산합니다</div>
 <nav><a href="/" class="on">대시보드</a><a href="/accuracy/" class="">적중 기록</a><a href="/archive/" class="">아카이브</a><a href="/posts/" class="">글</a><a href="/guide.html" class="">제도</a><a href="/methodology.html" class="">방법론</a></nav></header>
 <section class="hero">
-<div class="eyebrow">🌙 미국장 진행 중 · 대용 지표 흐름</div>
-<div class="lead" style="border:0;padding:0;margin-bottom:16px">
-지금은 코스피200 야간선물을 대신하는 <b>미국 시장 지표</b>가
-실시간으로 움직이는 시간입니다. 아래는 현재까지의 흐름이며,
-<b>개장 갭은 미국장이 마감되는 새벽에 확정</b>됩니다.</div>
-
-<div class="nflow up">
-<div class="nflow-lb">현재 흐름</div>
-<div class="nflow-v">상승 우세</div>
-<div class="nflow-sub">상승 3 · 하락 0 (환율 제외)</div>
-</div>
-
-<div class="nlive-wrap"><div class="nlive">
-<div class="nlive-nm">EWY<em>미국 상장 한국 ETF</em></div>
-<div class="nlive-v mono up">171.14
-<em class="up">▲ +6.80%</em></div></div><div class="nlive">
-<div class="nlive-nm">반도체(SOX)<em>필라델피아 반도체지수</em></div>
-<div class="nlive-v mono up">12,179.26
-<em class="up">▲ +6.55%</em></div></div><div class="nlive">
-<div class="nlive-nm">나스닥<em>나스닥 종합</em></div>
-<div class="nlive-v mono up">26,584.99
-<em class="up">▲ +2.59%</em></div></div><div class="nlive">
-<div class="nlive-nm">달러/원<em>원달러 환율</em></div>
-<div class="nlive-v mono up">1,429.00
-<em class="up">▲ +0.04%</em></div></div></div>
-
-<div class="zero-warn" style="color:var(--dim);
- background:rgba(255,255,255,.04);border-color:var(--line)">
-⚠️ 미국장이 진행 중입니다. 위 값은 <b>현재가</b>이며 계속 변합니다.
-오늘의 개장 갭 환산은 <b>새벽 6시</b>에 확정됩니다. (미국장 마감 곧 마감)</div>
-
-<div class="howto"><div class="t">지금 이 화면은</div><ul>
-<li>야간선물 대신 <b>미국 대용 지표</b>의 실시간 흐름을 보여줍니다</li>
-<li>방향만 참고하십시오. <b>갭 숫자는 마감 후 확정</b>됩니다 (진행 중 값은 검증 밖)</li>
-<li>30분마다 갱신됩니다</li>
-</ul></div>
-<div class="stamp">마지막 갱신 · 08월 05일 05:28 KST</div>
-</section>
+<div class="eyebrow" style="color:var(--warn)">환산 보류</div>
+<div class="lead"><b>개장 갭</b>은 오늘 아침 코스피가 직전 종가보다 얼마나 높게(또는 낮게) 시작하는지를 말합니다.<br>아래 숫자는 <b>코스피200 야간선물지수를 대변할 수 있는 간밤의 미국 시장 지표</b>로 환산한 값입니다. 예측이 아니라, 이미 형성된 가격을 코스피 단위로 옮긴 것에 가깝습니다.</div>
+<div class="num mono" style="font-size:1.4rem;color:var(--warn);line-height:1.45">
+숫자를 제시하지 않습니다</div>
+<p style="color:var(--dim);font-size:.9rem;margin-top:10px">반도체(SOX) 등락 +6.6%는 과거 관측 범위를 벗어납니다.
+모델은 검증된 조건 안에서만 신뢰할 수 있습니다.</p>
+<div class="stat">
+<div>참고 계산값 (신뢰 불가)<b style="color:var(--faint)">+3.15%</b></div>
+<div>직전 종가<b>6,358.95</b></div>
+<div>기준일<b>08-04</b></div>
+</div></section>
 
 <section><div class="eyebrow">근거 · 간밤 해외 지표</div>
 <h2>이 숫자들이 위의 갭을 만들었습니다</h2>
@@ -210,10 +183,10 @@ border:1px solid var(--line);border-radius:8px;padding:12px 4px}
 <div class="bar"><i style="left:50%;width:46.9790657339472%;background:var(--up)"></i><span class="mid"></span></div>
 <div class="bar-lb"><span>갭 기여도</span><span class="up">+1.49%p</span></div></div><div class="ind"><div class="ind-top">
 <div class="ind-nm">달러/원<em>원달러 환율</em></div>
-<div class="ind-v up">+0.04%<em>1,429.00</em></div></div>
-<div class="bar"><i style="left:50%;width:0.3167041617592958%;background:var(--up)"></i><span class="mid"></span></div>
-<div class="bar-lb"><span>갭 기여도</span><span class="up">+0.01%p</span></div></div>
-<div class="stamp">미국장 마감 기준 · 08월 05일 05:28 KST
+<div class="ind-v up">+0.01%<em>1,428.59</em></div></div>
+<div class="bar"><i style="left:50%;width:0.056985099418091045%;background:var(--up)"></i><span class="mid"></span></div>
+<div class="bar-lb"><span>갭 기여도</span><span class="up">+0.00%p</span></div></div>
+<div class="stamp">미국장 마감 기준 · 08월 05일 06:03 KST
 &nbsp;(0시간 전)</div></section>
 
 <section><div class="eyebrow">국면별 정확도</div>
@@ -274,4 +247,4 @@ border:1px solid var(--line);border-radius:8px;padding:12px 4px}
 <footer>데이터 · 한국거래소 KRX Open API, Yahoo Finance<br>
 이 사이트는 과거 데이터의 통계적 관계만 계산합니다. 투자 조언이나 매매 권유가 아니며,
 투자 판단의 근거로 사용될 수 없습니다.<br>
-갱신 2026-08-05 05:28 KST</footer></div><script data-goatcounter="https://nightgap.goatcounter.com/count" async src="//gc.zgo.at/count.js"></script></body></html>
+갱신 2026-08-05 06:03 KST</footer></div><script data-goatcounter="https://nightgap.goatcounter.com/count" async src="//gc.zgo.at/count.js"></script></body></html>
