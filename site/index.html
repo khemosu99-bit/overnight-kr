@@ -152,15 +152,45 @@ border:1px solid var(--line);border-radius:8px;padding:12px 4px}
 <div class="tag">간밤 해외 지표로 오늘 코스피 개장 갭을 환산합니다</div>
 <nav><a href="/" class="on">대시보드</a><a href="/accuracy/" class="">적중 기록</a><a href="/archive/" class="">아카이브</a><a href="/posts/" class="">글</a><a href="/guide.html" class="">제도</a><a href="/methodology.html" class="">방법론</a></nav></header>
 <section class="hero">
-<div class="eyebrow">🟢 장중</div>
-<div class="lead" style="border:0;padding:0">
-한국 증시가 열려 있습니다. 개장 갭은 이미 확정되었고,
-장중 흐름은 예측하지 않습니다.<br>
-다음 거래일 개장 갭 예상은 <b>내일 새벽 6시</b>에 갱신됩니다.</div>
-<div class="howto" style="border-top:0;margin-top:12px"><div class="t">지금 볼 것</div><ul>
+<div class="eyebrow">⚪ 장 마감 · 오늘의 기록</div>
+<div class="lead" style="border:0;padding:0;margin-bottom:16px">
+한국 증시가 마감되었습니다. 오늘의 개장 갭 예상은 종료되었고,
+<b>다음 거래일 개장 갭 예상은 새벽 6시</b>에 갱신됩니다.</div>
+<div class="pts">
+<div>아침 예상<b class="dn">-0.65%</b>
+<em>새벽 06:01</em></div>
+<div>실제 개장<b class="dn">-15.23%</b>
+<em>시가 5,594</em></div>
+</div>
+<div class="zero-warn" style="color:var(--up);
+ background:rgba(255,95,86,.08);
+ border-color:rgba(255,95,86,.3)">
+오늘 예상 <b>벗어남</b> · 방향 일치
+· 오차 14.57%p</div>
+<div class="pts" style="margin-top:12px">
+<div>오늘 시가<b>5,593.56</b></div>
+<div>종가<b>6,274.68</b></div>
+<div>장중 등락<b class="up">+12.18%</b><em>시가→종가</em></div>
+</div>
+<div class="howto" style="margin-top:16px"><div class="t">지금 볼 것</div><ul>
 <li><a href="/accuracy/" style="color:var(--down)">예측 적중 기록</a> — 80% 구간 적중률 80.2%</li>
-<li><a href="/archive/" style="color:var(--down)">월별 갭 아카이브</a> — 과거 개장 갭</li>
+<li><a href="/archive/" style="color:var(--down)">월별 갭 아카이브</a> — 과거 개장 갭 전체</li>
+<li>다음 야간 라이브는 <b>밤 11시</b>부터 (미국장 개장)</li>
 </ul></div></section>
+
+<section><div class="eyebrow">이번 주 개장 갭</div>
+<h2>월요일부터 오늘까지</h2>
+<div class="wk-strip"><div class="wk-day">
+<div class="wk-wd">월</div>
+<div class="wk-gap dn">-3.6%</div></div><div class="wk-day">
+<div class="wk-wd">화</div>
+<div class="wk-gap up">+1.5%</div></div><div class="wk-day">
+<div class="wk-wd">수</div>
+<div class="wk-gap up">+3.8%</div></div></div>
+<p style="color:var(--dim);font-size:.86rem;margin-top:12px">
+이번 주 3거래일 평균 개장 갭 <b style="color:var(--text)">+0.58%</b>.
+각 날짜의 예측 적중 여부는
+<a href="/accuracy/" style="color:var(--down)">적중 기록</a>에서 확인하실 수 있습니다.</p></section>
 
 <section><div class="eyebrow">근거 · 간밤 해외 지표</div>
 <h2>이 숫자들이 위의 갭을 만들었습니다</h2>
@@ -170,27 +200,27 @@ border:1px solid var(--line);border-radius:8px;padding:12px 4px}
 <div class="ind"><div class="ind-top">
 <div class="ind-nm">EWY<em>미국 상장 한국 ETF</em></div>
 <div class="ind-v dn">-1.17%<em>169.14</em></div></div>
-<div class="bar"><i style="left:50%;width:5.102967758828469%;background:var(--up)"></i><span class="mid"></span></div>
-<div class="bar-lb"><span>갭 기여도</span><span class="dn">+0.05%p</span></div></div><div class="ind"><div class="ind-top">
+<div class="bar"><i style="left:46.431658317524096%;width:3.5683416824759053%;background:var(--down)"></i><span class="mid"></span></div>
+<div class="bar-lb"><span>갭 기여도</span><span class="dn">-0.14%p</span></div></div><div class="ind"><div class="ind-top">
 <div class="ind-nm">반도체(SOX)<em>필라델피아 반도체지수</em></div>
-<div class="ind-v dn">-1.40%<em>12,008.88</em></div></div>
-<div class="bar"><i style="left:12.22981499609795%;width:37.77018500390205%;background:var(--down)"></i><span class="mid"></span></div>
-<div class="bar-lb"><span>갭 기여도</span><span class="dn">-0.37%p</span></div></div><div class="ind"><div class="ind-top">
+<div class="ind-v up">+1.13%<em>11,430.35</em></div></div>
+<div class="bar"><i style="left:50%;width:0.3884011131451378%;background:var(--up)"></i><span class="mid"></span></div>
+<div class="bar-lb"><span>갭 기여도</span><span class="up">+0.01%p</span></div></div><div class="ind"><div class="ind-top">
 <div class="ind-nm">나스닥<em>나스닥 종합</em></div>
-<div class="ind-v dn">-0.83%<em>26,363.44</em></div></div>
-<div class="bar"><i style="left:0.0%;width:50.0%;background:var(--down)"></i><span class="mid"></span></div>
-<div class="bar-lb"><span>갭 기여도</span><span class="dn">-0.48%p</span></div></div><div class="ind"><div class="ind-top">
+<div class="ind-v up">+3.15%<em>25,913.90</em></div></div>
+<div class="bar"><i style="left:50%;width:50.0%;background:var(--up)"></i><span class="mid"></span></div>
+<div class="bar-lb"><span>갭 기여도</span><span class="up">+1.90%p</span></div></div><div class="ind"><div class="ind-top">
 <div class="ind-nm">달러/원<em>원달러 환율</em></div>
-<div class="ind-v dn">-0.36%<em>1,423.28</em></div></div>
-<div class="bar"><i style="left:38.96877797240914%;width:11.03122202759086%;background:var(--down)"></i><span class="mid"></span></div>
-<div class="bar-lb"><span>갭 기여도</span><span class="dn">-0.11%p</span></div></div>
-<div class="stamp">미국장 마감 기준 · 08월 06일 09:13 KST
+<div class="ind-v dn">-0.83%<em>1,423.78</em></div></div>
+<div class="bar"><i style="left:45.61716816404921%;width:4.38283183595079%;background:var(--down)"></i><span class="mid"></span></div>
+<div class="bar-lb"><span>갭 기여도</span><span class="dn">-0.17%p</span></div></div>
+<div class="stamp">미국장 마감 기준 · 08월 06일 15:45 KST
 &nbsp;(0시간 전)</div></section>
 
 <section><div class="eyebrow">국면별 정확도</div>
 <h2>계수는 같지만, 오차는 국면마다 다릅니다</h2>
 <table><thead><tr><th>국면</th><th>표본</th><th>R²</th><th>오차범위</th></tr></thead>
-<tbody><tr><td>저변동</td><td>88</td><td>0.37</td><td>±0.65%p</td></tr><tr><td>중변동</td><td>89</td><td>0.61</td><td>±1.12%p</td></tr><tr><td>고변동<span class=now>현재</span></td><td>88</td><td>0.33</td><td>±2.82%p</td></tr></tbody></table>
+<tbody><tr><td>저변동</td><td>88</td><td>0.37</td><td>±0.65%p</td></tr><tr><td>중변동</td><td>89</td><td>0.61</td><td>±1.12%p</td></tr><tr><td>고변동<span class=now>현재</span></td><td>88</td><td>0.28</td><td>±2.92%p</td></tr></tbody></table>
 <p style="color:var(--dim);font-size:.84rem;margin-top:12px">
 변동성이 큰 시기에는 같은 모델이라도 오차가 4배 가까이 커집니다.
 하나의 오차범위를 고정하면 어느 한쪽에서는 반드시 거짓말이 됩니다.
@@ -245,4 +275,4 @@ border:1px solid var(--line);border-radius:8px;padding:12px 4px}
 <footer>데이터 · 한국거래소 KRX Open API, Yahoo Finance<br>
 이 사이트는 과거 데이터의 통계적 관계만 계산합니다. 투자 조언이나 매매 권유가 아니며,
 투자 판단의 근거로 사용될 수 없습니다.<br>
-갱신 2026-08-06 09:14 KST</footer></div><script data-goatcounter="https://nightgap.goatcounter.com/count" async src="//gc.zgo.at/count.js"></script></body></html>
+갱신 2026-08-06 15:45 KST</footer></div><script data-goatcounter="https://nightgap.goatcounter.com/count" async src="//gc.zgo.at/count.js"></script></body></html>
