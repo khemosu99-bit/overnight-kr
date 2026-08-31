@@ -1,40 +1,40 @@
 {
-  "date": "2026-08-31",
-  "base_date": "2026-08-28",
-  "base_close": 6788.88,
-  "gap": -0.8301,
-  "lo": -3.6935,
-  "hi": 2.0332,
+  "date": "2026-09-01",
+  "base_date": "2026-08-31",
+  "base_close": 6820.02,
+  "gap": 0.1072,
+  "lo": -2.7562,
+  "hi": 2.9706,
   "regime": "고변동",
-  "saved_at": "06:00",
+  "saved_at": "06:01",
   "indicators": [
     {
       "key": "EWY_r",
       "name": "EWY",
-      "pct": -1.07,
-      "price": 180.2,
-      "contrib": -0.022
+      "pct": 0.37,
+      "price": 180.86,
+      "contrib": 0.008
     },
     {
       "key": "SOX_r",
       "name": "반도체(SOX)",
-      "pct": -3.47,
-      "price": 11469.66,
-      "contrib": -0.771
+      "pct": 0.57,
+      "price": 11535.05,
+      "contrib": 0.127
     },
     {
       "key": "NASDAQ_r",
       "name": "나스닥",
-      "pct": -0.52,
-      "price": 26402.42,
-      "contrib": -0.259
+      "pct": -0.12,
+      "price": 26370.89,
+      "contrib": -0.059
     },
     {
       "key": "USDKRW_r",
       "name": "달러/원",
-      "pct": -0.22,
-      "price": 1377.36,
-      "contrib": -0.065
+      "pct": -0.88,
+      "price": 1368.32,
+      "contrib": -0.254
     }
   ]
 }
